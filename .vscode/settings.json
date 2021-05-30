@@ -1,0 +1,22 @@
+{
+    "sqltools.connections": [
+        {
+            "pgOptions": {
+                "statement_timeout": 60000,
+                "query_timeout": 60000,
+                "connectionTimeoutMillis": 10000,
+                "idleTimeoutMillis": 10000,
+                "max": 10
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "localhost",
+            "database": "cribbage",
+            "username": "postgres",
+            "password": "postgres",
+            "connectionTimeout": 10000
+        }
+    ]
+}
