@@ -1,24 +1,21 @@
 
 import Config from './config/Config.js';
 import Logger from './src/util/Logger.js';
-//import CribbageServer from './src/server/CribbageServer.js'
+import CribbageServer from './src/server/CribbageServer.js'
 import {Server as SocketIOServer} from 'socket.io';
 import Database from './src/database/Database.js'
-//import { log } from 'winston';
-//import User from './src/models/User.js';
 import {WaitThenExit, InstallTopLevelHandlers} from './src/util/ProcessUtils.js';
-import swaggerJsDoc from 'swagger-jsdoc';
     
 //_________________________________________________________________________________________________
 // Global error handlers
 // Handle unhandled promise rejections by logging and exiting 
 const unhandledRejectionHandler = (error) => {
-    Logger.error(`** Global handler: unhandledRejection (exiting): ${error.message}, ${error.stack}`);
+    //Logger.error(`** Global handler: unhandledRejection (exiting): ${error.message}, ${error.stack}`);
     process.exit(-1);
 };
 // Handle uncaught exceptions by logging and exiting  
 const uncaughtExceptionHandler = (error) => {
-    Logger.error(`** Global handler: uncaughtException (exiting): ${error.message}, ${error.stack}`);
+    //Logger.error(`** Global handler: uncaughtException (exiting): ${error.message}, ${error.stack}`);
     process.exit(-2);
 };
 
@@ -43,16 +40,16 @@ await db.TestConnection();
 
 Logger.info(``);
 Logger.info(`__________ Initialize backend API/socket servers`);
-//let cribbageServer = new CribbageServer();
+let cribbageServer = new CribbageServer();
 Logger.info(`Create socket server`);
 const socketServer = new SocketIOServer();
 
 Logger.info(``);
 Logger.info(`__________ Start backend API/socket servers`);
-//await cribbageServer.Start();
-//let httpServer = cribbageServer.httpServer;
-//Logger.info(`SocketServer start`);
-//let io = socketServer.listen(httpServer);
+await cribbageServer.Start();
+let httpServer = cribbageServer.httpServer;
+Logger.info(`SocketServer start`);
+let io = socketServer.listen(httpServer);
 
 Logger.info(``);
 Logger.info(`Start backend: complete`);
