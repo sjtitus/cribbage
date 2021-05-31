@@ -35,8 +35,8 @@ InstallTopLevelHandlers(unhandledRejectionHandler, uncaughtExceptionHandler, exi
 
 Logger.info(``);
 Logger.info(`__________ Confirm database connectivity`);
-const db = Database.Instance('main');
-await db.TestConnection();
+//const db = Database.Instance('main');
+//await db.TestConnection();
 
 Logger.info(``);
 Logger.info(`__________ Initialize backend API/socket servers`);
