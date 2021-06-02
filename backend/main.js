@@ -35,8 +35,8 @@ InstallTopLevelHandlers(unhandledRejectionHandler, uncaughtExceptionHandler, exi
 
 Logger.info(``);
 Logger.info(`__________ Confirm database connectivity`);
-//const db = Database.Instance('main');
-//await db.TestConnection();
+const db = Database.Instance('main');
+await db.TestConnection();
 
 Logger.info(``);
 Logger.info(`__________ Initialize backend API/socket servers`);
@@ -57,7 +57,6 @@ Logger.info(`___________________________________________________________`);
 Logger.info(``);
 
 
-/*
 // TODO: move this
 io.on('connection', function (socket) {
   Logger.info(`[ socket user connected ]`)
@@ -69,4 +68,3 @@ io.on('connection', function (socket) {
     io.emit('chat message', msg);
   });
 });
-*/

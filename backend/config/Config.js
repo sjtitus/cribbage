@@ -23,7 +23,7 @@ export default
     },
     database: {
         user: 'postgres',
-        host: 'localhost',
+        host: 'dbhost',
         database: 'cribbage',
         password: 'postgres',
         port: 5432,
