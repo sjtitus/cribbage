@@ -1,7 +1,7 @@
-import Logger from '../util/Logger.js';
 import expressWinston from 'express-winston';
 
-const log = Logger.child({module:'RequestLogger'});
+import {GetModuleLogger} from '../util/Logger.js';
+const log = GetModuleLogger('RequestLogger');
 
 const RequestLogger = expressWinston.logger({
     winstonInstance: log,

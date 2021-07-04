@@ -1,11 +1,13 @@
 
 import Config from './config/Config.js';
-import Logger from './src/util/Logger.js';
 import CribbageServer from './src/server/CribbageServer.js'
 import {Server as SocketIOServer} from 'socket.io';
 import Database from './src/database/Database.js'
 import {WaitThenExit, InstallTopLevelHandlers} from './src/util/ProcessUtils.js';
-    
+  
+import {GetModuleLogger} from './src/util/Logger.js';
+const Logger = GetModuleLogger('main');
+
 //_________________________________________________________________________________________________
 // Global error handlers
 // Handle unhandled promise rejections by logging and exiting 

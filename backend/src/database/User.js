@@ -5,10 +5,9 @@
  */
 import { strict as assert } from 'assert';
 import Database from './database/Database.js';
-import Logger from '../util/Logger.js';
 
-// Logging
-const log = Logger.child({module:'UserEntity'});
+import {GetModuleLogger} from '../util/Logger.js';
+const log = GetModuleLogger('UserEntity');
 
 // Database singleton 
 const db = Database.Instance('UserEntity');

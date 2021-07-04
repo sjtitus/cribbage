@@ -1,7 +1,6 @@
-import Logger from '../util/Logger.js';
+import {GetModuleLogger} from '../util/Logger.js';
+const log = GetModuleLogger('Cookie');
 
-const log = Logger.child({module:'Cookie'});
-  
 // Middleware to dump incoming cookies
 function DumpCookie(req, res, next) {
     if ('cookie' in req.headers) {

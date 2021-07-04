@@ -4,12 +4,12 @@
  *__________________________________________________________________________________________________
 */
 import { strict as assert } from 'assert';
-import Logger from '../util/Logger.js';
 import Config from '../../config/Config.js';
 import Pool from 'pg-pool';
 import util from 'util';
 
-const log = Logger.child({module:'Database'});
+import {GetModuleLogger} from '../util/Logger.js';
+const log = GetModuleLogger('Database');
 
 //_____________________________________________________________________________
 // Configuration

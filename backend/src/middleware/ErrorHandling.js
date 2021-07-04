@@ -4,9 +4,8 @@
  *_____________________________________________________________________________
 */
 
-import Logger from '../util/Logger.js';
-
-const log = Logger.child({module:'ErrorHandling'});
+import {GetModuleLogger} from '../util/Logger.js';
+const log = GetModuleLogger('ErrorHandling');
 
 // explicit404: needs to be after all application logic middleware, but
 // before 'raiseError' below. If we've fallen through to this point, 

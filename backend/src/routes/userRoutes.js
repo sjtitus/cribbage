@@ -24,8 +24,9 @@ request body does not meet your specifications.
 */
 
 import express from 'express';
-import Logger from '../util/Logger.js';
-const log = Logger.child({module:'UserRoutes'});
+
+import {GetModuleLogger} from '../util/Logger.js';
+const log = GetModuleLogger('UserRoutes');
 
 const router = express.Router();
 

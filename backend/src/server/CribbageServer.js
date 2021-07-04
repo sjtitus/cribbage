@@ -5,8 +5,8 @@
 import { strict as assert } from 'assert';
 import httpContext from 'express-http-context';
 import express from 'express';
-import Logger from '../util/Logger.js';
 import Config from '../../config/Config.js';
+import {GetModuleLogger} from '../util/Logger.js';
 
 // Swagger and JsDoc: API documentation
 import swaggerUi from 'swagger-ui-express';
@@ -22,8 +22,7 @@ import SetRequestId from '../middleware/SetRequestId.js';
 // API routes
 import userRoutes from '../routes/userRoutes.js';
 
-const log = Logger.child({module:'CribbageServer'});
-
+const log = GetModuleLogger('CribbageServer');
 
 class CribbageServer {
   constructor() {

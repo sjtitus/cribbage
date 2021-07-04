@@ -5,10 +5,11 @@
 */
 import session from 'express-session';
 import mstore from 'memorystore';
-import Logger from '../util/Logger.js';
 import Config from '../../config/Config.js';
+import {GetModuleLogger} from '../util/Logger.js';
 
-const log = Logger.child({module:'SessionManager'});
+const log = GetModuleLogger('SessionManager');
+
 const MemoryStore = mstore(session);
 
 class SessionManager {

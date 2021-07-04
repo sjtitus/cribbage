@@ -37,6 +37,22 @@ export default
         alg: 'sha256',
         saltlen: 16
     },
+    logFilePath: './logs/all.log',
+    logLevelDefault: 'debug',
+    logLevels: {
+        main: 'debug',
+        dataabase: 'debug',
+        UserEntity: 'debug',
+        DeckHand: 'info',
+        Pegging: 'info',
+        AuthMiddleware: 'debug',
+        User: 'debug',
+        APIRoutes: 'debug',
+        Login: 'debug',
+        UserRoutes: 'debug',
+        CribbageServer: 'debug',
+        SessionManager: 'debug',
+    },
     api: {
         jsDocOptions: {
             failOnErrors: true,
