@@ -3,8 +3,6 @@ import KS from 'knuth-shuffle';
 import {GetModuleLogger} from '../util/Logger.js';
 const log = GetModuleLogger('DeckHand');
 
-console.log(`deck/hand logging level is ${log.transports[1].level}`);
-
 const cardArray = [
     // clubs
     { order: 1,  value: 1,  name: 'A',  suit: 'C', color: 'B' },

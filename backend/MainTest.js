@@ -3,6 +3,9 @@ import { Deck, Hand, CardsToString } from './src/game/deck.js';
 import { strict as assert } from 'assert';
 import { WaitThenExit } from './src/util/ProcessUtils.js';
 
+import {GetModuleLogger} from './src/util/Logger.js';
+const log = GetModuleLogger('main');
+
 
 /*
 const h = new Hand( [ 
@@ -11,7 +14,7 @@ const h = new Hand( [
 ]);
 const c = h.GetValidCard(29);
 h.Remove(c);
-console.log(h.String());
+log.info(h.String());
 process.exit(0);
 */
 
@@ -26,56 +29,58 @@ const players = [
     { name: "Bob", dealer: false, hand: p1Hand,  originalHand: p1Hand.String() },
 ];
 
-console.log(`___________________________________________`);
-console.log(`player 0: dealer: ${players[0].dealer}, hand: ${players[0].originalHand}`);
-console.log(`player 1: dealer: ${players[1].dealer}, hand: ${players[1].originalHand}`);
-console.log(`___________________________________________`);
+log.info(`=====`);
+log.info(`player 0: dealer: ${players[0].dealer}, hand: ${players[0].originalHand}`);
+log.info(`player 1: dealer: ${players[1].dealer}, hand: ${players[1].originalHand}`);
+log.info(`=====`);
 
 const m = new PeggingMachine(players);
+let timerID = null;
+let timerReqID = null;
 
 // Respond to server request for a card 
 function selectCard(playerIndex, sum, reqID) {
-    //console.log(`___________________________________________`);
+    log.info(`=====`);
     const p = players[playerIndex];
-    //console.log(`player ${playerIndex} turn: (req=${reqID})`);
-    //console.log(`   hand: ${players[playerIndex].hand.String()}`);
-    //console.log(`   Pile: ${CardsToString(m._peggingData.pile)}`);
-    //console.log(`   Sum: ${sum}`);
     let card = p.hand.GetValidCard(sum);
-    //console.log(`  card: ${CardsToString(card)}`);
-    //console.log(`___________________________________________`);
-    m._dispatch('GOTCARD', playerIndex, reqID, card, false);    // human submitted (not auto)
+    log.info(`  Player ${playerIndex}: human card selected: ${CardsToString(card)} (req=${reqID})`);
+    log.info(`=====`);
+    timerID = setTimeout(() => m._dispatch('GOTCARD', playerIndex, reqID, card, false), 4000);
+    timerReqID = reqID;
 }
 
 // Card accepted on server side 
-function cardPlayed(playerIndex, card) {
+function cardPlayed(playerIndex, card, reqID, auto) {
     const p = players[playerIndex];
+    if (auto && timerID !== null && reqID === timerReqID) {
+        clearTimeout(timerID);
+    }
     p.hand.Remove(card); 
-    console.log(`___________________________________________`);
-    console.log(`Player ${playerIndex}: card played, ${CardsToString(card)}`);
-    console.log(`         P0 hand: ${players[0].hand.String()}`);
-    console.log(`         P1 hand: ${players[1].hand.String()}`);
-    console.log(`            Pile: ${CardsToString(m._peggingData.pile)}`);
-    console.log(`     pegging sum: ${m._peggingData.sum}`);
-    console.log(`   pegging score: P0=${m._peggingData.playerData[0].points}, P1=${m._peggingData.playerData[1].points}`);
-    console.log(`___________________________________________`);
-    console.log(``);
+    log.info(`=====`);
+    log.info(`Player ${playerIndex}: card removed/played, ${CardsToString(card)}`);
+    log.info(`         P0 hand: ${players[0].hand.String()}`);
+    log.info(`         P1 hand: ${players[1].hand.String()}`);
+    log.info(`            Pile: ${CardsToString(m._peggingData.pile)}`);
+    log.info(`     pegging sum: ${m._peggingData.sum}`);
+    log.info(`   pegging score: P0=${m._peggingData.playerData[0].points}, P1=${m._peggingData.playerData[1].points}`);
+    log.info(`=====`);
+    log.info(``);
 }
 
 // Card rejected on server side 
 function cardRejected(playerIndex, reqID) {
-    console.log(`___________________________________________`);
-    console.log(`Player ${playerIndex}: card rejected (req=${reqID})`);
-    console.log(` . how could this happen to me?`);
-    console.log(`___________________________________________`);
+    log.info(`=====`);
+    log.info(`Player ${playerIndex}: card rejected (req=${reqID})`);
+    log.info(` . how could this happen to me?`);
+    log.info(`=====`);
 }
 
 
 // Respond to pegging machine events
-m.Events.on('peg-start', () => setImmediate(() => m._dispatch('PROCEED')) );
-m.Events.on('peg-requestcard', (playerIndex, sum, reqID) => setTimeout(() => selectCard(playerIndex, sum, reqID),2000) );
+m.Events.on('peg-start', () => setImmediate(() => m._dispatch('BEGIN')) );
+m.Events.on('peg-requestcard', (playerIndex, sum, reqID) => setTimeout(() => selectCard(playerIndex, sum, reqID),0) );
 m.Events.on('peg-card-rejected', (playerIndex, reqID) => setTimeout(() => cardRejected(playerIndex, reqID),0) );
-m.Events.on('peg-card-played', (playerIndex, card) => setTimeout(() => cardPlayed(playerIndex, card),0) );
+m.Events.on('peg-card-played', (playerIndex, card, reqID, auto) => setTimeout(() => cardPlayed(playerIndex, card, reqID, auto),0) );
 
 m.Run();
 
@@ -84,24 +89,24 @@ m.Run();
 /*
 import Deck from './src/game/deck.js';
 
-console.log('creating deck');
+log.info('creating deck');
 const deck = new Deck(); 
 
 deck.Shuffle(3);
 const bigHand = deck.GetCards(5);
 
-bigHand.forEach((c) => console.log(`dealt card: ${c.name} of ${c.suit}`));
+bigHand.forEach((c) => log.info(`dealt card: ${c.name} of ${c.suit}`));
 
 const bigHand2 = deck.GetCards(40);
 
-console.log('---> should be 7 remaining');
-console.log('---shuffle');
+log.info('---> should be 7 remaining');
+log.info('---shuffle');
 deck.Shuffle();
 deck.Dump();
-console.log('---shuffle');
+log.info('---shuffle');
 deck.Shuffle();
 deck.Dump();
-console.log('---shuffle');
+log.info('---shuffle');
 deck.Shuffle();
 deck.Dump();
 
