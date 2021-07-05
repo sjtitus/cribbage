@@ -88,12 +88,10 @@ export class PeggingMachine {
   
     //_________________________________________________________________________
     // State: Start
-    // Emit event signaling start of pegging (and whose turn it is) 
     _Start() {
         const playerData = this._CurrentPlayerData;
-        log.debug(`PeggingMachine [${this._currentState}]: signaling pegging start`); 
-        this._emit('peg-start', playerData.index);
-        return null;
+        log.info(`PeggingMachine [${this._currentState}]: signaling ready to start`);
+        this._emit('peg-ready', playerData.index);
     }
 
     //_________________________________________________________________________
@@ -109,14 +107,13 @@ export class PeggingMachine {
         this._peggingData.cardRequestID = reqID; 
         log.info(`PeggingMachine [${this._currentState}]: REQUEST CARD from ${playerData.index} (req ${reqID})`);
         this._setPlayerTimeout(playerData.index, reqID);
-        this._emit('peg-requestcard', playerData.index, this._peggingData.sum, reqID);
-        return null;
+        this._emit('peg-card-requested', playerData.index, this._peggingData.sum, reqID);
     }
 
     //_________________________________________________________________________
     // Transition: GotCard
-    // On receiving a card: play the card, score, then transition to the 
-    // appropriate state based on the outcome (end, request another card, etc.) 
+    // When we get a card: validate it, move it from hand to pile, then
+    // transition to scoring.  
     _GotCard(playerIndex, reqID, card, auto) {
         
         assert(Array.isArray(card) && card.length===1);
@@ -140,21 +137,22 @@ export class PeggingMachine {
         log.debug(`PeggingMachine [${this._currentState}]: card ${cardStr} valid, clearing request`); 
         this._peggingData.cardRequestID = null;
         
-        // signal the card was successfully played
-        this._emit('peg-card-played', currentPlayerData.index, card, reqID, auto); 
-        
         // move the card from the player's hand to the pile 
         log.debug(`PeggingMachine [${this._currentState}]: moving card ${cardStr} from player to pile`); 
         const pulledCard = currentPlayerData.hand.Remove(card);
         assert(pulledCard !== null);
         this._peggingData.pile.push(card[0]);
-
+        
+        // signal the card was successfully played
         // next state is scoring 
+        this._emit('peg-card-played', currentPlayerData.index, card, reqID, auto); 
         return 'SCORE';
     }
 
 
-    // card has just been laid down on the pile: score it
+    //_________________________________________________________________________
+    // State: Score 
+    // Score the card just played on the top of the pile.
     _Score() {
 
         const card = this._peggingData.pile.slice(-1);
@@ -192,11 +190,15 @@ export class PeggingMachine {
         }
         log.info(`PeggingMachine [${this._currentState}]: Score: sum=${this._peggingData.sum}, P0=${this._peggingData.playerData[0].points}, P1=${this._peggingData.playerData[1].points}`);
 
-        // Post-transition action for Scoring state
+        // Score is a transient state: once the scoring is done,
+        // execute an action to make the post-scoring transition 
         return { action: 'POSTSCORETRANSITION', payload: [] }; 
     }
 
 
+    //_________________________________________________________________________
+    // Transition: ComputePostScoreState 
+    // Determine 
     _computePostScoreState() {
         // conditions determining next state
         // based on the current sum
@@ -278,6 +280,7 @@ export class PeggingMachine {
     }
 
     _End() {
+        log.info(`PeggingMachine [${this._currentState}]: END of pegging`); 
     }
    
     //__________________________________________________________________________
@@ -310,7 +313,10 @@ export class PeggingMachine {
             }
         }
     }
-    
+   
+    // Change state
+    // Executes 'exit' and 'enter' actions for old/new states, and an optional action to automatically
+    // execute post-transition (enables 'transient' states with auto-transition based on state-entry logic ).
     _changeState(newState) {
         log.info(`PeggingMachine [${this._currentState}]: transition ${this._currentState} --> ${newState}`);
         let postTransitionAction = null; 

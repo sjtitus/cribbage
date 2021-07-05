@@ -75,10 +75,9 @@ function cardRejected(playerIndex, reqID) {
     log.info(`=====`);
 }
 
-
 // Respond to pegging machine events
-m.Events.on('peg-start', () => setImmediate(() => m._dispatch('BEGIN')) );
-m.Events.on('peg-requestcard', (playerIndex, sum, reqID) => setTimeout(() => selectCard(playerIndex, sum, reqID),0) );
+m.Events.on('peg-ready', () => setImmediate(() => m._dispatch('BEGIN')) );
+m.Events.on('peg-card-requested', (playerIndex, sum, reqID) => setTimeout(() => selectCard(playerIndex, sum, reqID),0) );
 m.Events.on('peg-card-rejected', (playerIndex, reqID) => setTimeout(() => cardRejected(playerIndex, reqID),0) );
 m.Events.on('peg-card-played', (playerIndex, card, reqID, auto) => setTimeout(() => cardPlayed(playerIndex, card, reqID, auto),0) );
 
