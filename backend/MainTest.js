@@ -71,7 +71,6 @@ function cardPlayed(playerIndex, card, reqID, auto) {
 function cardRejected(playerIndex, reqID) {
     log.info(`=====`);
     log.info(`Player ${playerIndex}: card rejected (req=${reqID})`);
-    log.info(` . how could this happen to me?`);
     log.info(`=====`);
 }
 
