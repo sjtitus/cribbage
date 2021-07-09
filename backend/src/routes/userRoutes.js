@@ -104,8 +104,21 @@ async function getUsers(req, res, next) {
 }
 router.get('/users', getUsers); 
 
-
-
+async function delayTest(req, res, next) {
+    try {
+        const delayMillisec = req.query.delayMillis || 5000;
+        log.debug(`delayTest: waiting for ${delayMillisec} ms before returning`);
+        await new Promise( (resolve) => setTimeout(resolve, delayMillisec) );
+        res.setHeader('Access-Control-Allow-Origin','http://localhost:3000');
+        res.setHeader('Vary','Origin');
+        res.status(200).json({"message" : "delayTest successful"});
+    }
+    catch (err) {
+      log.error(`delayTest: error waiting for ${delayMillisec} ms before returning: ${err.message}`);
+      next(err)
+    }
+}
+router.get('/delayTest', delayTest); 
 
 
 

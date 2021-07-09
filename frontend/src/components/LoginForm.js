@@ -10,7 +10,6 @@ import TextFieldControl from './TextFieldControl';
 import StyledForm from './StyledForm';
 import LoginRequest from '../shared/models/LoginRequest.js'; 
 
-
 export const LoginForm = forwardRef( (props, ref) => {
     
     const realtime = ('validateRealtime' in props); 
