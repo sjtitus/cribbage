@@ -1,15 +1,34 @@
 /*_____________________________________________________________________________
     api 
     Module for calling backend API. Uses axios. 
+         
+    Response
+          statusCode
+          statusText
+          data
+          config
+          request
+          response
+          error
+          errorText
   _____________________________________________________________________________
 */
 import axios from 'axios';
 import { strict as assert } from 'assert';
-import { useState, useEffect } from 'react';
+import {GetModuleLogger} from '../util/Logger.js';
+const log = GetModuleLogger('api');
+        
+const emptyResponse = { 
+          statusCode: null, 
+          statusText: null,
+          data: null, 
+          config: null, 
+          request: null, 
+          response: null, 
+          error: null,
+          errorText: null
+};
 
-import Logger from '../utils/Logger';
-const log = Logger.child({module:'api'});
-    
 export class apiRequest {
 
     constructor(requestParams, client) {
@@ -20,52 +39,42 @@ export class apiRequest {
     }
 
     // Execute the request
-    // No callbacks specified: awaits and returns result
-    // Callbacks specified: does not await, invokes callbacks 
-    async execute(onLoading=null, onSuccess=null, OnError=null, OnCancel=null) {
-        const out = { 
-          state: 'pending',
-          status: null, 
-          request: null, 
-          response: null, 
-          data: null, 
-          error: {
-            message: null,
-            config: null,
-          } 
-        };
-        if (arguments.length === 1) {
-            log.debug(`apiRequest: execute (await): params=${JSON.stringify(this.params)}`);
-            try {
-                const axiosResponse = await this.client.request(this.params);
-                // `data` is the response that was provided by the server
-                // `status` is the HTTP status code from the server response
-                // `statusText` is the HTTP status message from the server response
-                // `headers` the HTTP headers; e.g. `response.headers['content-type']`
-                // `config` is the config that was provided to `axios` for the request
-                // `request` is the request that generated this response
-                log.debug(`apiRequest: success`); 
-                out.state = 'success';
-                out.status = axiosResponse.status;
-                out.request = axiosResponse.response;
-                out.response = axiosResponse;
-                out.data = axiosResponse.data;
-            }
-            catch (err) {
+    async execute(onPending=null, onSuccess=null, onError=null, onCancel=null) {
+        log.debug(`apiRequest: execute: params=${JSON.stringify(this.params)}`);
+        const out = { ...emptyResponse }; 
+        try {
+            onPending && onPending();
+            const axiosResponse = await this.client.api.request(this.params);
+            // `data` is the response that was provided by the server
+            // `status` is the HTTP status code from the server response
+            // `statusText` is the HTTP status message from the server response
+            // `headers` the HTTP headers; e.g. `response.headers['content-type']`
+            // `config` is the config that was provided to `axios` for the request
+            // `request` is the request that generated this response
+            log.debug(`apiRequest: success`); 
+            out.statusCode = axiosResponse.status;
+            out.statusText = axiosResponse.statusText;
+            out.data = axiosResponse.data;
+            out.config = axiosResponse.config;
+            out.request = axiosResponse.request;
+            out.response = axiosResponse;
+            out.error = false;
+            out.errorText = null;
+
+        }
+        catch (err) {
                 out.state = 'error';
                 out.error.message = err.message;
                 out.error.config = err.config;
+                out.request = err.request || null;
+                out.response = err.response || null;
                 if (err.response) {
                     log.error(`apiRequest: (response received): error: ${err.message}`); 
-                    // both request and response 
-                    out.response = err.response;
                     out.data = err.response.data; 
                     out.status = err.response.status;
                 }
                 else if (err.request) {
                     log.error(`apiRequest: (no response received): error: ${err.message}`); 
-                    // request but no response 
-                    out.request = err.request;
                 }
                 else {
                     log.error(`apiRequest: (no request made): error: ${err.message}`); 
@@ -77,20 +86,50 @@ export class apiRequest {
         }
         else {
             log.debug(`apiRequest: execute (callback): params=${JSON.stringify(this.params)}`);
+            try {
+                onLoading && onLoading();
+                const axiosResponse = await this.client.api.request(this.params);
+                log.debug(`apiRequest: success`); 
+                out.state = 'success';
+                out.status = axiosResponse.status;
+                out.request = axiosResponse.request;
+                out.response = axiosResponse;
+                out.data = axiosResponse.data;
+                onSuccess && onSuccess(out);
+            }
+            catch (err) {
+                out.state = 'error';
+                out.error.message = err.message;
+                out.error.config = err.config;
+                out.request = err.request || null;
+                out.response = err.response || null;
+                if (err.response) {
+                    log.error(`apiRequest: (response received): error: ${err.message}`); 
+                    out.data = err.response.data; 
+                    out.status = err.response.status;
+                }
+                else if (err.request) {
+                    log.error(`apiRequest: (no response received): error: ${err.message}`); 
+                }
+                else {
+                    log.error(`apiRequest: (no request made): error: ${err.message}`); 
+                }
+                onError && onError(out);
+            }
+            finally {
+                log.debug(`apiRequest: finished`); 
+            }
         }
     }
 
 } 
 
-class apiClient {
+export class apiClient {
 
-    constructor(baseURL, timeout) {
+    constructor(config) {
+        const { baseURL, timeout } = config;
         log.info(`apiClient: construct: baseURL=${baseURL}, timeout=${timeout}`);
-        this.api = axios.create({
-          baseURL: baseURL,
-          timeout: timeout,
-          //headers: {'X-Custom-Header': 'foobar'}
-        });
+        this.api = axios.create(config);
         this.api.defaults.headers.post['Content-Type'] = 'application/json';
     }
 
