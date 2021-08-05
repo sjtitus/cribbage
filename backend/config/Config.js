@@ -1,4 +1,4 @@
-export default 
+export default
 {
     main: {
         waitBeforeExitSeconds: 25
@@ -22,10 +22,10 @@ export default
         }
     },
     database: {
-        user: 'postgres',
-        host: 'dbhost',
+        user: 'cribbage',
+        host: 'db-dev-postgres-scratchpad.cttif5ymouyr.us-east-1.rds.amazonaws.com',
         database: 'cribbage',
-        password: 'postgres',
+        password: 'CribbageRootUser69!',
         port: 5432,
         max: 15,
         idleTimeoutMillis: 10000,
@@ -118,7 +118,7 @@ export default
                             "description": "User id",
                             "schema": { "type": "integer", "format": "int32" }
                         },
-                        "skipParam": { "name": "skip", "required": true, "in": "query", 
+                        "skipParam": { "name": "skip", "required": true, "in": "query",
                             "description": "Number of items to skip",
                             "schema": { "type": "integer", "format": "int32" }
                         },
@@ -130,7 +130,7 @@ export default
                     },
                     "requestBodies": {
                         "NewUserReqBody": {
-                            "description": "New user request", 
+                            "description": "New user request",
                             "content": {
                                 "application/json": {
                                     "schema": {
@@ -143,20 +143,20 @@ export default
                     },
                     "responses": {
                         "UserList": {
-                            "description": "A list of users", 
+                            "description": "A list of users",
                             "content": {
                                 "application/json": {
                                     "schema": {
                                         "type": "array",
                                         "items": {
                                             "$ref": "#/components/schemas/User"
-                                        } 
+                                        }
                                     }
                                 }
                             }
                         },
                         "User": {
-                            "description": "A user", 
+                            "description": "A user",
                             "content": {
                                 "application/json": {
                                     "schema": {
@@ -167,7 +167,7 @@ export default
 
                         },
                         "UserExists": {
-                            "description": "User exists", 
+                            "description": "User exists",
                             "content": {
                                 "application/json": {
                                     "schema": {
@@ -177,7 +177,7 @@ export default
                             }
                         },
                         "NewUserCreated": {
-                            "description": "New user created", 
+                            "description": "New user created",
                             "content": {
                                 "application/json": {
                                     "schema": {
@@ -219,6 +219,6 @@ export default
             apis: [
                 "./src/routes/*Routes.js"
             ]
-        }  
+        }
     }
 }

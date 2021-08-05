@@ -49,11 +49,23 @@ const requestParams = {
 };
 
 const req = new apiRequest(requestParams, client);
-const answer = await req.execute();
 
-log.info(`Finished with API test (await)`);
+req.execute().then( (out) => {
+      log.info(`out: normal exit`);
+}).catch((e) => {
+      log.error(`out: error ${e}`);
+});
 
+/*
+(async function() {
+  log.info('waiting at top level');
+  await WaitThenExit(5);
+}());
+*/
 
+log.info(`waiting to script to end`);
+
+/*
 const requestParams2 = {
     method: 'put',
     url: '/delayTest',
@@ -66,4 +78,4 @@ const onSuccess = (res) => { log.info(`success: status = ${res.status}`); }
 const onError = (res) => { log.info(`error: ${JSON.stringify(res.error)}`); }
 req2.execute(onLoading, onSuccess, onError);
 
-
+*/
