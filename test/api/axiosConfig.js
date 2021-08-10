@@ -2,6 +2,7 @@
   Docs for Axios config object
 ___________________________________________________________________________________________________
 */
+const tmp =
 {
   // `url` is the server URL that will be used for the request
   url: '/user',

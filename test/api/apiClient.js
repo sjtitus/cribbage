@@ -1,63 +1,43 @@
 /*_____________________________________________________________________________
-    api
-    Module for calling backend API. Uses axios.
-
-    Success Response
-        statusCode
-        statusText
-        data
-        config
-        request
-        response
-        error
-        errorText
-
-    Error Response
-        code (string)
-        message
-        config
-        request
-        response
-        stack
-        toJSON()
+    see also: apiRequest.
   _____________________________________________________________________________
 */
 import axios from 'axios';
 import { strict as assert } from 'assert';
 import {GetModuleLogger} from '../util/Logger.js';
-const log = GetModuleLogger('api');
+const log = GetModuleLogger('apiClient');
 
-export class apiRequest {
 
-    constructor(requestParams, client) {
-        assert(client && requestParams && requestParams.url && requestParams.method);
-        log.debug(`apiRequest: construct: requestParams=${JSON.stringify(requestParams)}`);
-        this.client = client;
-        this.params = requestParams;
+// TODO: continue here
+
+export class apiClient {
+
+    constructor(config) {
+        const { baseURL, timeout } = config;
+        log.info(`apiClient: construct: baseURL=${baseURL}, timeout=${timeout}`);
+        this.api = axios.create(config);
+        // set up for JSON payload
+        this.api.defaults.headers.post['Content-Type'] = 'application/json';
     }
 
-    // Execute the request
-    async execute(onPending=null, onSuccess=null, onError=null, onCancel=null) {
-        log.debug(`apiRequest: execute: params=${JSON.stringify(this.params)}`);
+    // Execute a request 
+    async execute(apiRequest, onPending=null, onSuccess=null, onError=null, onCancel=null) {
+        log.debug(`apiClient: execute: request=${JSON.stringify(apiRequest)}`);
         const out = {};
         try {
             onPending && onPending();
-            const axiosResponse = await this.client.api.request(this.params);
-            // Axios response
-            //  `data` is the response that was provided by the server
-            //  `status` is the HTTP status code from the server response
-            //  `statusText` is the HTTP status message from the server response
-            //  `headers` the HTTP headers; e.g. `response.headers['content-type']`
-            //  `config` is the config that was provided to `axios` for the request
-            //  `request` is the request that generated this response
-            log.debug(`apiRequest: success`);
+            const axiosResponse = await this.client.api.request(apiRequest);
+            log.debug(`apiClient: request success`);
             out.statusCode = axiosResponse.status;
             out.statusText = axiosResponse.statusText;
             out.data = axiosResponse.data;
             out.config = axiosResponse.config;
             out.request = axiosResponse.request;
             out.response = axiosResponse;
-            onSuccess && onSuccess(out);
+            if (onSuccess) {
+                onSuccess(out);
+                return out;
+            }
         }
         catch (err) {
             if (err.response) {
@@ -77,17 +57,6 @@ export class apiRequest {
             }
         }
     }
-}
-
-export class apiClient {
-
-    constructor(config) {
-        const { baseURL, timeout } = config;
-        log.info(`apiClient: construct: baseURL=${baseURL}, timeout=${timeout}`);
-        this.api = axios.create(config);
-        this.api.defaults.headers.post['Content-Type'] = 'application/json';
-    }
-
 }
 
 
