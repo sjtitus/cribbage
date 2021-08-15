@@ -1,6 +1,5 @@
-import { apiClient, apiRequest } from './api/api.js'
+import apiClient from './api/apiClient.js'
 import {GetModuleLogger} from './util/Logger.js';
-import { WaitThenExit } from './util/ProcessUtils.js';
 const log = GetModuleLogger('Test');
 
 log.info(`Starting API test`);
@@ -40,30 +39,39 @@ process.exit(0);
 
 
 //const client = new apiClient('http://jsonplaceholder.typicode.com',5000);
-const client = new apiClient({baseURL: 'http://localhost:8080', timeout: 5000});
+const client = apiClient.Instance({baseURL: 'http://localhost:8080', timeout: 5000});
 
-const requestParams = {
+const requestConfig = {
     method: 'get',
     url: '/delayTest',
-    params: { delayMillis: 7000 }
+    params: { delayMillis: 3000 }
 };
 
-const req = new apiRequest(requestParams, client);
+const req = client.request(requestConfig); 
 
+await req.run();
+
+/*
 req.execute().then( (out) => {
       log.info(`out: normal exit`);
 }).catch((e) => {
       log.error(`out: error ${e}`);
 });
+*/
 
 /*
 (async function() {
   log.info('waiting at top level');
   await WaitThenExit(5);
 }());
+
+log.info(`trying to cancel request`);
+const wasCancelled = req.cancel();
+log.info(`cancel result: ${wasCancelled}`);
 */
 
-log.info(`waiting to script to end`);
+req.cancel();
+log.info(`main: done`);
 
 /*
 const requestParams2 = {

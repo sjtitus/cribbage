@@ -4,60 +4,64 @@
 */
 import axios from 'axios';
 import { strict as assert } from 'assert';
+import { apiRequest } from './apiRequest.js';
 import {GetModuleLogger} from '../util/Logger.js';
 const log = GetModuleLogger('apiClient');
 
 
-// TODO: continue here
+//_____________________________________________________________________________
+// Singleton instance 
+let instance = null;
 
-export class apiClient {
+class apiClient {
 
-    constructor(config) {
-        const { baseURL, timeout } = config;
-        log.info(`apiClient: construct: baseURL=${baseURL}, timeout=${timeout}`);
-        this.api = axios.create(config);
-        // set up for JSON payload
-        this.api.defaults.headers.post['Content-Type'] = 'application/json';
+    constructor(apiClientConfig) {
+        const { baseURL, timeout } = apiClientConfig;
+        log.debug(`apiClient: construct: baseURL=${baseURL}, timeout=${timeout}`);
+        this._api = axios.create(apiClientConfig);
+        // set up for JSON payload: TODO: is there more here?
+        this._api.defaults.headers.post['Content-Type'] = 'application/json';
+    }
+
+    // create a new request that will execute using this client
+    request(apiRequestConfig) {
+        log.debug(`apiClient: create request: config=${JSON.stringify(apiRequestConfig)}`);
+        // generate info necessary for cancellation
+        const source = axios.CancelToken.source();
+        apiRequestConfig.cancelToken = source.token;
+        const req = new apiRequest(this, apiRequestConfig, source);
+        log.debug(`apiClient: new request id: ${req._id}`);
+        return req; 
     }
 
     // Execute a request 
-    async execute(apiRequest, onPending=null, onSuccess=null, onError=null, onCancel=null) {
-        log.debug(`apiClient: execute: request=${JSON.stringify(apiRequest)}`);
-        const out = {};
-        try {
-            onPending && onPending();
-            const axiosResponse = await this.client.api.request(apiRequest);
-            log.debug(`apiClient: request success`);
-            out.statusCode = axiosResponse.status;
-            out.statusText = axiosResponse.statusText;
-            out.data = axiosResponse.data;
-            out.config = axiosResponse.config;
-            out.request = axiosResponse.request;
-            out.response = axiosResponse;
-            if (onSuccess) {
-                onSuccess(out);
-                return out;
-            }
-        }
-        catch (err) {
-            if (err.response) {
-              log.error(`apiRequest: error (response received): ${err.message}`);
-            }
-            else if (err.request) {
-              log.error(`apiRequest: error (no response received): ${err.message}`);
-            }
-            else {
-              log.error(`apiRequest: error (no request made): ${err.message}`);
-            }
-            if (onError) {
-              onError(err);
-            }
-            else {
-              throw err;
-            }
-        }
+    async execute(apiRequest) {
+        log.debug(`apiClient: execute (id: ${apiRequest._id})`);
+        const axiosResponse = await this._api.request(apiRequest._config);
+        log.debug(`apiClient: execute (id: ${apiRequest._id}): success`);
+        return axiosResponse;
     }
 }
+
+//__________________________________________________________________________________________________
+// Singleton implementation
+function getSingleton(apiClientConfig) {
+    if (instance === null) {
+        assert(apiClientConfig);
+        log.debug(`Creating singleton apiClient instance`);
+        instance = new apiClient(apiClientConfig); 
+    }
+    else {
+        assert(!apiClientConfig);
+    }
+    log.debug(`Returning singleton apiClient instance`);
+    return instance;
+}
+
+export default {
+    Instance: getSingleton,
+}
+
 
 
 /*

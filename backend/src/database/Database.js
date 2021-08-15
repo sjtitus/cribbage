@@ -21,10 +21,8 @@ const config = Config.database;
 // Singleton instance 
 let instance = null;
 
-
 //_____________________________________________________________________________
 // Database class 
-//
 class Database {
     
     constructor(dbConfig) {
