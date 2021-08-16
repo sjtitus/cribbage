@@ -7,9 +7,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-import Logger from '../utils/Logger';
-const log = Logger.child({module:'useAxios'});
-
+import {GetModuleLogger} from '../utils/Logger.js';
+const log = GetModuleLogger('useAxios');
 
 //axios.defaults.baseURL = 'https://jsonplaceholder.typicode.com';
 axios.defaults.baseURL = 'http://localhost:8080';

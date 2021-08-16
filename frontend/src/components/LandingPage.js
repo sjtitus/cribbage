@@ -16,9 +16,8 @@ import { UserContext } from '../contexts/UserContext';
 import UserState from '../shared/models/UserState';
 import { Link } from 'react-router-dom';
 
-import Logger from '../utils/Logger';
-const log = Logger.child({module:'LandingPage'});
-
+import {GetModuleLogger} from '../utils/Logger.js';
+const log = GetModuleLogger('LandingPage');
 
 
 function LandingPage(props) {

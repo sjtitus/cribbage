@@ -3,9 +3,8 @@
       Actions taken by the user. Invoked via UserContext reducer.
   ______________________________________________________________________________
 */
-import Logger from '../utils/Logger.js'
-
-const log = Logger.child({module:'UserActions'});
+import {GetModuleLogger} from '../utils/Logger.js';
+const log = GetModuleLogger('UserActions');
 
 // hit login endpoint to see if we're automatically logged in 
 // (i.e. remembered by server)

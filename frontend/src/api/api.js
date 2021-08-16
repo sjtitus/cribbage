@@ -7,8 +7,8 @@ import axios from 'axios';
 import { strict as assert } from 'assert';
 import { useState, useEffect } from 'react';
 
-import Logger from '../utils/Logger';
-const log = Logger.child({module:'api'});
+import {GetModuleLogger} from '../utils/Logger.js';
+const log = GetModuleLogger('api');
     
 export class apiRequest {
 

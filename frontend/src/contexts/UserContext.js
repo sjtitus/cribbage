@@ -32,9 +32,9 @@ import React, {createContext, useReducer} from 'react';
 import propTypes from 'prop-types';
 import UserState from '../shared/models/UserState';
 import UserActions from './UserActions.js';
-import Logger from '../utils/Logger.js'
 
-const log = Logger.child({module:'UserContext'});
+import {GetModuleLogger} from '../utils/Logger.js';
+const log = GetModuleLogger('UserContext');
 
 //_____________________________________________________________________________
 // Get the initial user state

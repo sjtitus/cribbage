@@ -7,9 +7,8 @@ import React, {useContext} from 'react';
 import { Redirect } from "react-router-dom";
 import { UserContext } from '../contexts/UserContext';
 
-import Logger from '../utils/Logger';
-const log = Logger.child({module:'GamePage'});
-    
+import {GetModuleLogger} from '../utils/Logger.js';
+const log = GetModuleLogger('GamePage');
 
 export default function GamePage() {
   

@@ -5,7 +5,7 @@
 import axios from 'axios';
 import { strict as assert } from 'assert';
 import { apiRequest } from './apiRequest.js';
-import {GetModuleLogger} from '../util/Logger.js';
+import { GetModuleLogger } from '../util/Logger.js';
 const log = GetModuleLogger('apiClient');
 
 
@@ -17,7 +17,7 @@ class apiClient {
 
     constructor(apiClientConfig) {
         const { baseURL, timeout } = apiClientConfig;
-        log.debug(`apiClient: construct: baseURL=${baseURL}, timeout=${timeout}`);
+        log.debug(`Construct: baseURL=${baseURL}, timeout=${timeout}`);
         this._api = axios.create(apiClientConfig);
         // set up for JSON payload: TODO: is there more here?
         this._api.defaults.headers.post['Content-Type'] = 'application/json';
@@ -25,20 +25,19 @@ class apiClient {
 
     // create a new request that will execute using this client
     request(apiRequestConfig) {
-        log.debug(`apiClient: create request: config=${JSON.stringify(apiRequestConfig)}`);
-        // generate info necessary for cancellation
+        log.debug(`Create request: config=${JSON.stringify(apiRequestConfig)}`);
+        // do cancellation automatically for convenience 
         const source = axios.CancelToken.source();
         apiRequestConfig.cancelToken = source.token;
         const req = new apiRequest(this, apiRequestConfig, source);
-        log.debug(`apiClient: new request id: ${req._id}`);
+        log.debug(`New request id: ${req._id}`);
         return req; 
     }
 
     // Execute a request 
     async execute(apiRequest) {
-        log.debug(`apiClient: execute (id: ${apiRequest._id})`);
+        log.debug(`Execute reqquest ${apiRequest._id}`);
         const axiosResponse = await this._api.request(apiRequest._config);
-        log.debug(`apiClient: execute (id: ${apiRequest._id}): success`);
         return axiosResponse;
     }
 }
