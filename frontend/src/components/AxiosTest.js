@@ -1,33 +1,27 @@
+import apiClient from '../api/apiClient';
 import { useAxios } from '../hooks/useAxios.js';
 import { Link } from 'react-router-dom';
 import Button from '@material-ui/core/Button';
 import { useState } from 'react';
+    
+const api = apiClient.Instance({baseURL: 'http://localhost:8080', timeout: 5000});
+
+const apiRequest = api.request({
+        method: 'get',
+        url: '/delayTest',
+        params: { delayMillis: 3000 },
+        headers: { accept: '*/*' }
+});
+
 
 export const AxiosTest = (props) => {
 
-    const [fire, setFire] = useState(false);
-
-    const { response, loading, error } = useAxios({
-        method: 'GET',
-        url: '/delayTest?delayMillis=5000',
-        headers: { // no need to stringify
-          accept: '*/*'
-        }
-        /*
-        data: {  // no need to stringify
-            userId: 1,
-            id: 19392,
-            title: 'title',
-            body: 'Sample text',
-        },
-        */
-    }, fire);
+    const apiState = useAxios(apiRequest);
     
-    console.log(`rendering axiosTest`);
+    console.log(`srt: rendering axiosTest: loading=${apiState.loading}, response=${apiState.result}`);
 
     const ButtonClick = (e) => {
-        setFire(!fire); 
-        console.log(`fire is ${fire}`);
+        console.log(`click`);
     }
 
     return (
@@ -36,22 +30,19 @@ export const AxiosTest = (props) => {
             <Button onClick={ButtonClick}> Call API </Button>
             <h1>Posts</h1>
 
-            {loading ? (
+            {apiState.loading ? (
                 <p>loading...</p>
             ) : (
                 <div>
-                    {error && (
-                        <div>
-                            <p>ERROR {error.message}</p>
-                        </div>
-                    )}
-                    <div> {
-                      // no need to use another state to store data, response is sufficient
-                      // response && <p>hello</p>
-                      //response.map((e,i) => <div>{JSON.stringify(e)} key={i}</div>)
-                      //response && response.map((e,i) => <div key={i}>{JSON.stringify(e)}</div>)
-                      <div>{response.message} </div>
+                    {
+                        apiState.result && (
+                            <div>
+                                <p>ApiResponse received: state: {apiState.result._state}</p>
+                            </div>
+                        )
                     }
+                    <div>
+                                <p>Loading done</p>
                     </div>
                 </div>
             )}

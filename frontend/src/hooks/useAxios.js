@@ -5,59 +5,53 @@
  */
 
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 
 import {GetModuleLogger} from '../utils/Logger.js';
-const log = GetModuleLogger('useAxios');
+const mn = 'srt:UseAxios';
+const log = GetModuleLogger(`${mn}`);
 
-//axios.defaults.baseURL = 'https://jsonplaceholder.typicode.com';
-axios.defaults.baseURL = 'http://localhost:8080';
-    
-export const useAxios = (axiosParams, trigger=null) => {
+export const useAxios = (apiRequest) => {
+   
+    const [apiRequestState, setApiRequestState] = useState({ loading: true, result: null});
 
-    const [response, setResponse] = useState(undefined);
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [requestNum, setRequestNum] = useState(0);
-
-    log.debug(`executing UseAxios`);
+    log.debug(`${mn}: loading=${apiRequestState.loading}, result=${apiRequestState.result}`);
     let unmounted = false;
 
-    const fetchData = async (params) => {
-      try {
-            setRequestNum(requestNum+1);
-            log.debug(`API: executing request (${JSON.stringify(params)})`); 
-            const result = await axios.request(params);
-            log.debug(`API: request ${requestNum} successful`); 
-            setResponse(result.data);
-       } catch( error ) {
-            log.error(`API: request ${requestNum} error ${error.message}`);
-            if (!unmounted) {
-                setError(error);
-            } 
-       } finally {
-           if (!unmounted) {
-                log.debug(`API: request ${requestNum} setting loading to false`);
-                setLoading(false);
-           }
-       }
+    function onSuccess(res) { 
+        log.debug(`${mn}: api request success: setting result`); 
+        setApiRequestState({ loading: false, result: res })
+    }
+    
+    function onError(res) { 
+        log.debug(`${mn}: api request error: setting result`); 
+        setApiRequestState({ loading: false, result: res })
+    }
+    
+    function onCancel(res) { 
+        log.debug(`${mn}: api request cancel: setting result`); 
+        setApiRequestState({ loading: false, result: res })
+    }
+
+    const fetchData = async (req) => {
+            log.debug(`${mn}: executing api request [${req._id}] (${JSON.stringify(req)})`); 
+            const result = await req.run(onSuccess, onError, onCancel);
+            log.debug(`${mn}: api request [${req._id}] complete`);
     };
 
     useEffect(() => {
-        if ((trigger === null) || (trigger)) {
-            const cancelTokenSource = axios.CancelToken.source();
-            axiosParams.cancelToken = cancelTokenSource.token;
-            log.debug(`fetching data with cancelToken: ${JSON.stringify(axiosParams.cancelToken)}`);
-            log.debug(`request numbers: ${requestNum}`);
-            fetchData(axiosParams);
-            return () => {
-                unmounted = true;
-                cancelTokenSource.cancel(`canceling request ${requestNum}: component was unmounted`);
-                log.warn(`canceling request ${requestNum}: component was unmounted`);
-            };
+        log.debug(`${mn}: useEffect: apiRequest state is ${apiRequest._state}`);
+        if (apiRequest._state !== "new") {
+            log.debug(`${mn}: generating new API request (current request [${apiRequest._id}] state is ${apiRequest._state})`);
+            apiRequest = apiRequest._client.request(apiRequest._config);
         }
-    }, (trigger !== null) ? [trigger]:[]);
+        fetchData(apiRequest);
+        return () => {
+            unmounted = true;
+            log.warn(`${mn}: canceling request ${apiRequest._id}: component was unmounted`);
+            apiRequest.cancel(`${mn}: canceling request ${apiRequest}: component was unmounted`);
+        };
+    }, []);
 
-    // return states that will change depeding on state of API request
-    return { response, error, loading };
+    // return dynamic API request state 
+    return apiRequestState;
 };
