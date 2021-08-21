@@ -26,9 +26,10 @@
 */
 import axios from 'axios';
 import { strict as assert } from 'assert';
-import {GetModuleLogger} from '../util/Logger.js';
+import { GetModuleLogger } from '../utils/Logger.js';
 import { v4 as uuidv4 } from 'uuid';
-const log = GetModuleLogger('apiRequest');
+
+const log = GetModuleLogger(`srt: apiRequest`);
 
 
 export class apiRequest {
@@ -66,13 +67,12 @@ export class apiRequest {
     //__________________________________________________________________________
     // Run the request asynchronously and return the result
     // Does not throw
-    async run(onPending=null, onSuccess=null, onError=null, onCancel=null) {
+    async run(onSuccess=null, onError=null, onCancel=null) {
         assert(this._state === 'new');  // requests run once
-        log.debug(`[${this._id}]: run request`); 
+        log.debug(`[${this._id}]: running request`); 
         try {
             this._state = 'running';
             this._time.executed = Date.now();
-            onPending && onPending(this);
             const res = await this._client.execute(this);
             this._result = {error: false, response: res}; 
             // Axios success response
@@ -111,6 +111,7 @@ export class apiRequest {
         }
         finally {
             assert(this._state !== 'running');
+            assert(this._state !== 'new');
             assert(this._result);
             assert(this._time.finished>0 && this._time.executed>0);
             assert(this._time.finished >= this._time.executed);
@@ -132,6 +133,13 @@ export class apiRequest {
             log.debug(`[${this._id}]: complete: state=${this._state}, duration (msec): ${this._time.durationMillisec}`);
             return this._result; 
         }
+    }
+
+    //__________________________________________________________________________
+    // Clone this request: return a new identical request with a diff ID
+    clone() {
+        log.debug(`[${this._id}]: generating a fresh (clone) request`);
+        return this._client.request(this._config);
     }
     
     //__________________________________________________________________________
