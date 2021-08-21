@@ -1,7 +1,10 @@
 export default
 {
-    logFilePath: './logs/all.log',
     logLevelDefault: 'debug',
     logLevels: {
     },
+    apiClient: {
+        baseURL: 'http://localhost:8080', 
+        timeout: 5000
+    }
 }

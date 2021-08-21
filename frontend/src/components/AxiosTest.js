@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import Button from '@material-ui/core/Button';
 import { useState } from 'react';
     
-const api = apiClient.Instance({baseURL: 'http://localhost:8080', timeout: 5000});
+const api = apiClient.Instance();
 
 const apiRequest = api.request({
         method: 'get',
@@ -18,7 +18,7 @@ export const AxiosTest = (props) => {
 
     const apiState = useAxios(apiRequest);
     
-    console.log(`srt: rendering axiosTest: loading=${apiState.loading}, response=${apiState.result}`);
+    console.log(`rendering axiosTest: loading=${apiState.loading}, response=${apiState.result}`);
 
     const ButtonClick = (e) => {
         console.log(`click`);

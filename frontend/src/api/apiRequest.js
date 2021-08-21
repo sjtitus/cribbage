@@ -28,7 +28,8 @@ import axios from 'axios';
 import { strict as assert } from 'assert';
 import { GetModuleLogger } from '../utils/Logger.js';
 import { v4 as uuidv4 } from 'uuid';
-const log = GetModuleLogger('apiRequest');
+
+const log = GetModuleLogger(`srt: apiRequest`);
 
 
 export class apiRequest {
@@ -68,7 +69,7 @@ export class apiRequest {
     // Does not throw
     async run(onSuccess=null, onError=null, onCancel=null) {
         assert(this._state === 'new');  // requests run once
-        log.debug(`[${this._id}]: srt: running request`); 
+        log.debug(`[${this._id}]: running request`); 
         try {
             this._state = 'running';
             this._time.executed = Date.now();
@@ -133,6 +134,13 @@ export class apiRequest {
             return this._result; 
         }
     }
+
+    //__________________________________________________________________________
+    // Clone this request: return a new identical request with a diff ID
+    clone() {
+        log.debug(`[${this._id}]: generating a fresh (clone) request`);
+        return this._client.request(this._config);
+    }
     
     //__________________________________________________________________________
     // Cancel a running request
@@ -140,21 +148,21 @@ export class apiRequest {
     // Returns true/false on successful/failed cancel. 
     cancel(message) {
         assert(this._canceled === false);  // no re-canceling
-        log.debug(`[${this._id}]: srt: attempting to cancel request`);
+        log.debug(`[${this._id}]: attempting to cancel request`);
         if (this._state !== 'running') {
-            log.warn(`[${this._id}]: srt: cannot cancel non-running request (state: ${this._state})`);
+            log.warn(`[${this._id}]: cannot cancel non-running request (state: ${this._state})`);
             return false;
         }
         if (!this._cancelObj) {
-            log.error(`[${this._id}]: srt: cancel called with no cancelObj set`);
+            log.error(`[${this._id}]: cancel called with no cancelObj set`);
             return false
         }
         try {
             this._canceled = true;
             // this should trigger an error (catch block) in the run() method above
-            const msg = message || `srt: request ${this._id} was cancelled`;
+            const msg = message || `request ${this._id} was cancelled`;
             this._cancelObj.cancel(msg);
-            log.debug(`[${this._id}]: srt: cancel succeeded`);
+            log.debug(`[${this._id}]: cancel succeeded`);
             return true;
         }
         catch (err) {
