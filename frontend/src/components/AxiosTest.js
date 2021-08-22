@@ -2,7 +2,6 @@ import apiClient from '../api/apiClient';
 import { useAxios } from '../hooks/useAxios.js';
 import { Link } from 'react-router-dom';
 import Button from '@material-ui/core/Button';
-import { useState } from 'react';
     
 const api = apiClient.Instance();
 
@@ -13,11 +12,8 @@ const apiRequest = api.request({
         headers: { accept: '*/*' }
 });
 
-
 export const AxiosTest = (props) => {
-
     const apiState = useAxios(apiRequest);
-    
     console.log(`rendering axiosTest: loading=${apiState.loading}, response=${apiState.result}`);
 
     const ButtonClick = (e) => {

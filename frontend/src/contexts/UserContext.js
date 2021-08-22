@@ -83,7 +83,7 @@ const { Provider } = UserContext;
 // UserContextProvider: wrapper around the context provider that supplies
 // the state and dispatch functions to useContext
 const UserContextProvider = ( { children } ) => {
-  console.log(`RENDERING USERCONTEXTPROVIDER, about to call USEREDUCER`);
+  //console.log(`RENDERING USERCONTEXTPROVIDER, about to call USEREDUCER`);
   const [state, dispatch] = useReducer(UserContextReducer, initialUserState);
   return <Provider value={{ state, dispatch }}>{children}</Provider>;
 };

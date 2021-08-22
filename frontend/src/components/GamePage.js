@@ -12,10 +12,10 @@ const log = GetModuleLogger('GamePage');
 
 export default function GamePage() {
   
-  const userContext = useContext(UserContext);
-  const {state, dispatch} = userContext;
+  //const userContext = useContext(UserContext);
+  //const {state, dispatch} = userContext;
   
-  log.info(`Rendering gamepage: user id = ${state.userID}`);
+  //log.info(`Rendering gamepage: user id = ${state.userID}`);
   
   return (
     <div>

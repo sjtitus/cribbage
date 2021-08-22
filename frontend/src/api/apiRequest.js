@@ -29,7 +29,7 @@ import { strict as assert } from 'assert';
 import { GetModuleLogger } from '../utils/Logger.js';
 import { v4 as uuidv4 } from 'uuid';
 
-const log = GetModuleLogger(`srt: apiRequest`);
+const log = GetModuleLogger(`apiRequest`);
 
 
 export class apiRequest {

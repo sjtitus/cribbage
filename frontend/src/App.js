@@ -2,7 +2,7 @@ import LandingPage from './components/LandingPage';
 import GamePage from './components/GamePage';
 import { UserContextProvider }  from './contexts/UserContext';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import { AxiosTest } from './components/AxiosTest';
+//import { AxiosTest } from './components/AxiosTest';
                     // <LandingPage/>
 
 function App() {
@@ -13,7 +13,7 @@ function App() {
           <div>
             <Switch>
                 <Route exact path="/">
-                     <AxiosTest/>
+                     <LandingPage/>
                 </Route>
                 <Route exact path="/game">
                     <GamePage/>

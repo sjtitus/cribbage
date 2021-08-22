@@ -6,6 +6,7 @@
 import React, {useState, useContext} from 'react';
 import MyAppBar from './MyAppBar';
 import JoinGame from './JoinGame';
+import AlertBar from './AlertBar';
 import Typography from '@material-ui/core/Typography';
 import cribbageHandImage from './cribbagehand.png';
 import Grid from '@material-ui/core/Grid';
@@ -24,6 +25,8 @@ function LandingPage(props) {
   
   const [signUpOpen, setSignUpOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertSeverity, setAlertSeverity] = useState('error');
  
   // LandingPage uses UseContext
   const userContext = useContext(UserContext);
@@ -107,6 +110,25 @@ function LandingPage(props) {
       <LoginDialog isOpen={loginOpen} onCancel={OnLoginCancel} onSubmit={OnLoginSubmit}/>
       <Link to="/game"> Game Page </Link>
       <MyAppBar onLoginClick={() => setLoginOpen(true)}/>
+      <AlertBar severity={alertSeverity} message={alertMessage}/> 
+      <Button
+        variant="outlined"
+        onClick={() => {
+          setAlertMessage("this is a message");
+          setAlertSeverity('error');
+        }}
+      >
+        one
+      </Button>
+      <Button
+        variant="outlined"
+        onClick={() => {
+          setAlertMessage("this is a success message");
+          setAlertSeverity('success');
+        }}
+      >
+        two
+      </Button>
       <Grid { ...verticalGridProps}> 
         <Grid item>
             <Typography variant= "h4" align="center"> Let's Play Cribbage </Typography>
