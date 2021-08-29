@@ -18,5 +18,7 @@
             "password": "postgres",
             "connectionTimeout": 10000
         }
-    ]
+    ],
+    "editor.detectIndentation": false,
+    "editor.tabSize": 3
 }

@@ -46,9 +46,9 @@ function MyAppBar(props) {
   } = props; 
 
   const userContext = useContext(UserContext);
-  const { state } = userContext;
-  const loggedIn = (state.userID > 0);
+  const { userState, setUserState } = userContext;
 
+  const loggedIn = false;
   const LoginButton = (!loggedIn) ?
           <Button onClick={()=>{onLoginClick()}} variant="contained" color="primary"> Login </Button>:null;
 

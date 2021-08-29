@@ -1,6 +1,5 @@
 import { PeggingMachine } from './src/game/PeggingMachine.js';
 import { Deck, Hand, CardsToString } from './src/game/deck.js';
-import { strict as assert } from 'assert';
 import { WaitThenExit } from './src/util/ProcessUtils.js';
 
 import {GetModuleLogger} from './src/util/Logger.js';

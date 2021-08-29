@@ -74,6 +74,12 @@ class CribbageServer {
     this.app.use(RequestLogger);
     log.info(`    . middleware: incoming cookie`);
     this.app.use(DumpCookie);
+    log.info(`    . middleware: allow origin`);
+    this.app.use(function(req, res, next) {
+      res.setHeader('Access-Control-Allow-Origin','http://localhost:3000');
+      res.setHeader('Vary','Origin');
+      next();
+    });
   }
 
   // Set up endpiont routes

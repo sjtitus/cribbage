@@ -5,8 +5,8 @@
 import axios from 'axios';
 import { strict as assert } from 'assert';
 import { apiRequest } from './apiRequest.js';
-import { GetModuleLogger } from '../utils/Logger.js';
-import Config from '../config/Config.js';
+import { GetModuleLogger } from '../Logger.js';
+import Config from '../../config/Config.js';
 
 const log = GetModuleLogger('apiClient');
 

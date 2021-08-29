@@ -24,7 +24,7 @@ request body does not meet your specifications.
 */
 
 import express from 'express';
-
+import { User } from '../models/User.js'; 
 import {GetModuleLogger} from '../util/Logger.js';
 const log = GetModuleLogger('UserRoutes');
 
@@ -44,15 +44,24 @@ const router = express.Router();
  *          '404':
  *              $ref: '#/components/responses/NotFound'
  */ 
-async function getLoggedInUser(req, res, next) {
+async function GetLoggedInUser(req, res, next) {
     try {
-        log.debug(`getLoggedInUser: checking for user session`);
-        if ('user_id' in req.session) {
-            log.debug(`getCurrentUser: active session with user_id ${req.session.user_id}`);
-            res.sendStatus(200);
+        log.debug(`GetLoggedInUser: checking for user session`);
+        //if ('user_id' in req.session) {
+        if (true) {
+            log.debug(`GetLoggedInUser: active session with user_id ${req.session.user_id}`);
+            // fetch the user
+            let user = new User();
+            const userFound = await user.Load(1);
+            if (userFound) {
+               res.status(200).json(user);
+            }
+            else {
+               res.sendStatus(404);
+            }
         }
         else {
-            log.debug(`getLoggedInUser: no 'user_id' in session (not logged in)`);
+            log.debug(`GetLoggedInUser: no 'user_id' in session (not logged in)`);
             res.status(404).json({
                 "message": "not logged in" 
             });
@@ -62,7 +71,7 @@ async function getLoggedInUser(req, res, next) {
       next(err)
     }
 }
-router.get('/user', getLoggedInUser); 
+router.get('/user', GetLoggedInUser); 
 
 
 

@@ -14,7 +14,7 @@ import Button from '@material-ui/core/Button';
 import SignupDialog from './SignupDialog';
 import LoginDialog from './LoginDialog';
 import { UserContext } from '../contexts/UserContext';
-import UserState from '../shared/models/UserState';
+//import { GetLoggedInUser } from '../contexts/UserActions';
 import { Link } from 'react-router-dom';
 
 import {GetModuleLogger} from '../utils/Logger.js';
@@ -30,10 +30,9 @@ function LandingPage(props) {
  
   // LandingPage uses UseContext
   const userContext = useContext(UserContext);
-  const {state: uState, dispatch} = userContext;
-  const loggedIn = (uState.userID > 0 ); 
+  const {userState, setUserState} = userContext;
   
-  log.debug(`Loaded UserContext: logged in = ${loggedIn}`);
+  log.debug(`Loaded UserContext: userState = ${JSON.stringify(userState)}`);
 
   const verticalGridProps = {
       container: true, 
@@ -69,7 +68,7 @@ function LandingPage(props) {
     if (isValid) {
       const loginInfo = formRef.current.formState;
       log.info(JSON.stringify(loginInfo));
-      dispatch({type: 'login', payload: loginInfo});
+      //dispatch({type: 'login', payload: loginInfo});
       setLoginOpen(false);
     } 
   }
@@ -82,6 +81,7 @@ function LandingPage(props) {
     log.info(`Starting a new game...`);
   }
 
+  const loggedIn = false;
   const SignUpComponent = (!loggedIn) ?
         (<Grid item>
             <Grid container direction="column" alignContent="center">
@@ -96,7 +96,7 @@ function LandingPage(props) {
         (<Grid item>
             <Grid container direction="column" alignContent="center">
               <Grid item> 
-                <Typography variant= "h6" align="center"> Welcome back, {uState.firstName}! </Typography>
+                <Typography variant= "h6" align="center"> Welcome back, "Your Name Here"! </Typography>
               </Grid>
               <Grid item align="center">
                 <Button onClick={()=>{onStartNewGame()}} variant="contained" color="primary"> New Game </Button>

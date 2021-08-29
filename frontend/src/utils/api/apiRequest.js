@@ -26,11 +26,10 @@
 */
 import axios from 'axios';
 import { strict as assert } from 'assert';
-import { GetModuleLogger } from '../utils/Logger.js';
+import { GetModuleLogger } from '../Logger.js';
 import { v4 as uuidv4 } from 'uuid';
 
 const log = GetModuleLogger(`apiRequest`);
-
 
 export class apiRequest {
 
@@ -88,7 +87,7 @@ export class apiRequest {
         }
         catch (err) {
             log.debug(`[${this._id}]: error (class ${err.constructor.name})`);
-            this._result = {error: err}; 
+            this._result = {error: err, response: null}; 
             // Axios error response
             //  code (string)
             //  message
@@ -100,6 +99,7 @@ export class apiRequest {
             this._state = (this._canceled) ? 'canceled':'error';
             this._time.finished = Date.now();
             if (err.response) {
+              this._result.response = err.response;
               log.error(`[${this._id}]: error (response received): ${err.message}`);
             }
             else if (err.request) {
