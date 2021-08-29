@@ -14,26 +14,21 @@ const log = GetModuleLogger('User');
 export class User {
    
    constructor() {
-      this._user = { ...JSUser.initialState }; 
+      this._user = { ...JSUser.initialState };
+      this._dbUser = null; 
       log.debug(`Constructor: new uninitialized user ${JSON.stringify(this._user)}`);
    }
+
+   get UserObject() { return this._user; }
+   get DBObject() { return this._dbuser; }
 
    async Load(userId) {
       assert(this._user.id === -1, `Load: user must be uninitialized`);
       log.debug(`Load: id=${userId}`);
       const dbUser = await DbUser.read({id: userId});
-      // not found in db 
-      if (!dbUser) {
-         return false; 
-      }
       this._dbUser = dbUser;
       this._convert();
-      if (!JSUser.isValid(this._user)) {
-         const errs = JSUser.validateState(this._user);
-         log.error(`Load: id=${userId}: invalid db object (fields invalid/missing): ${JSON.stringify(errs)}`);
-         throw new Error(`User::Load: id=${userId}: invalid db object (fields invalid/missing)`);
-      }
-      return true; 
+      return (dbUser !== null);
    }
 
    async Save() {
@@ -41,6 +36,11 @@ export class User {
 
    // Convert the DB user to a JS user 
    _convert() {
+      if (this._dbUser === null) {
+         log.warning(`User model: db object is null id=${this._user.id}: reinitializing model`);
+         this._user = { ...JSUser.initialState };
+         return false;
+      }
       this._user.id = this._dbUser["id"];
       this._user.email = this._dbUser["email"];
       this._user.firstName = this._dbUser["firstname"];
@@ -48,5 +48,10 @@ export class User {
       this._user.created = this._dbUser["timestampcreated"];
       this._user.modified = this._dbUser["timestampmodified"];
       this._user.deleted = this._dbUser["timestampdeleted"]
+      if (!JSUser.isValid(this._user)) {
+         const errs = JSUser.validateState(this._user);
+         log.error(`User model: id=${this._user.id}: db object (fields invalid/missing): ${JSON.stringify(errs)}`);
+         throw new Error(`User model: id=${this._user.id}: invalid db object (fields invalid/missing)`);
+      }
    }
 }

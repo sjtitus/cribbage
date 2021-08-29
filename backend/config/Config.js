@@ -8,6 +8,7 @@ export default
         session: {
             secret: ['cribbage-75849827','cribbage-99210593','cribbage-25911064'],
             name: 'cribbage',
+            path: '/',
             resave: false,
             saveUninitialized: false,
             cookie: {
@@ -191,6 +192,12 @@ export default
                         },
                         "NotFound": {
                             "description": "Entity not found",
+                            "content": {
+                                "application/json": { "schema": { "$ref": "#/components/schemas/Message" } }
+                            }
+                        },
+                        "Gone": {
+                            "description": "Entity gone",
                             "content": {
                                 "application/json": { "schema": { "$ref": "#/components/schemas/Message" } }
                             }

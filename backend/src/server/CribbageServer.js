@@ -70,6 +70,11 @@ class CribbageServer {
     this.app.use(express.json());
     log.info(`    . middleware: session management`);
     this.app.use(this.sessionManager.middleware);
+    const sessionManager = this.sessionManager;
+    this.app.use(function(req, res, next){
+      res.locals.sessionManager = sessionManager; 
+      next();
+    });
     log.info(`    . middleware: request logging (winston)`);
     this.app.use(RequestLogger);
     log.info(`    . middleware: incoming cookie`);

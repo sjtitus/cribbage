@@ -1,9 +1,14 @@
+// Set process maxlisteners to 30 due to the derived loggers
+// we create for logging diff modules/levels.
+// Must be done first because modules create loggers during import time
+process.setMaxListeners(30)
 
 import Config from './config/Config.js';
 import CribbageServer from './src/server/CribbageServer.js'
 import {Server as SocketIOServer} from 'socket.io';
 import Database from './src/database/Database.js'
 import {WaitThenExit, InstallTopLevelHandlers} from './src/util/ProcessUtils.js';
+import { EventEmitter } from 'events';
 
 import {GetModuleLogger} from './src/util/Logger.js';
 const Logger = GetModuleLogger('main');
@@ -25,12 +30,11 @@ const exitHandler = (code) => {
     Logger.info(`** Global handler: exit event: exiting with code ${code}`);
 }
 
-
 Logger.info(``);
 Logger.info(``);
 Logger.info(`___________________________________________________________`);
 Logger.info(`Start backend`);
-
+Logger.info(``);
 Logger.info(``);
 Logger.info(`__________ Install process-level exception handlers`);
 InstallTopLevelHandlers(unhandledRejectionHandler, uncaughtExceptionHandler, exitHandler);

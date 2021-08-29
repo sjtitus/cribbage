@@ -23,36 +23,47 @@ const ModuleFormat = winston.format(info => {
     return info;
 });
 
-// Create/Get a logger for a specific code module.
-// Logging level for the module set in config file Config.logLevels
-export function GetModuleLogger(moduleName) {
-    if (!winston.loggers.has(moduleName)) {
-        const level = (Config.logLevels[moduleName]) ? Config.logLevels[moduleName]:Config.logLevelDefault;
-        winston.loggers.add(moduleName, {
-            format: winston.format.combine(
+const SingleFormat =  winston.format.combine(
                 ModuleFormat(),
                 winston.format.timestamp(),
                 winston.format.align(),
                 winston.format.printf(info => `${info.timestamp} ${info.module} ${info.level} ${info.message}`)
-            ),
-            level: level, 
-            transports: [
+);
+
+
+const FileTransport = 
                 new winston.transports.File({ 
                     filename: logFileName, 
                     handleExceptions: true
-                }),
+                });
+FileTransport._maxListeners = 30;
+
+const ConsoleTransport = 
                 new winston.transports.Console({
                     format: winston.format.combine(
                         winston.format.colorize(),
                         winston.format.printf(info => `${info.timestamp} ${info.module} ${info.level} ${info.message}`)
                     ),
                     handleExceptions: true
-                }),
-            ],
+                });
+ConsoleTransport._maxListeners = 30;
+
+
+// Create/Get a logger for a specific code module.
+// Logging level for the module set in config file Config.logLevels
+export function GetModuleLogger(moduleName) {
+    if (!winston.loggers.has(moduleName)) {
+        const level = (Config.logLevels[moduleName]) ? Config.logLevels[moduleName]:Config.logLevelDefault;
+       winston.loggers.add(moduleName, {
+            format: SingleFormat, 
+            level: level,
+            transports: [ FileTransport, ConsoleTransport ],
         });
     }
-    return winston.loggers.get(moduleName).child({module:moduleName});
+    const newLogger = winston.loggers.get(moduleName).child({module:moduleName});
+    return newLogger; 
 }
+
 
 
 /*

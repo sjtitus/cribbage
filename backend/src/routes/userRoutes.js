@@ -25,10 +25,12 @@ request body does not meet your specifications.
 
 import express from 'express';
 import { User } from '../models/User.js'; 
-import {GetModuleLogger} from '../util/Logger.js';
+import { DeleteSession } from './Helpers.js'; 
+import { GetModuleLogger } from '../util/Logger.js';
 const log = GetModuleLogger('UserRoutes');
 
 const router = express.Router();
+
 
 /**
  * @openapi
@@ -43,28 +45,29 @@ const router = express.Router();
  *              $ref: '#/components/responses/User'
  *          '404':
  *              $ref: '#/components/responses/NotFound'
+ *          '410':
+ *              $ref: '#/components/responses/Gone'
  */ 
 async function GetLoggedInUser(req, res, next) {
     try {
         log.debug(`GetLoggedInUser: checking for user session`);
-        //if ('user_id' in req.session) {
-        if (true) {
-            log.debug(`GetLoggedInUser: active session with user_id ${req.session.user_id}`);
-            // fetch the user
+        if ('user_id' in req.session) {
+            const uid = req.session.user_id;
+            log.debug(`GetLoggedInUser: active session with user_id ${uid}`);
             let user = new User();
-            const userFound = await user.Load(1);
+            const userFound = await user.Load(uid);
             if (userFound) {
-               res.status(200).json(user);
+               res.status(200).json(user.UserObject);
             }
             else {
-               res.sendStatus(404);
+               log.error(`GetLoggedInUser: existing session user ${uid} gone from database, clearing session/cookie`);
+               DeleteSession(req, res, log);
+               res.status(410).json({ "message": "user no longer exists" });
             }
         }
         else {
             log.debug(`GetLoggedInUser: no 'user_id' in session (not logged in)`);
-            res.status(404).json({
-                "message": "not logged in" 
-            });
+            res.status(404).json({ "message": "user not logged in" });
         }
     }
     catch (err) {
@@ -112,6 +115,10 @@ async function getUsers(req, res, next) {
     }
 }
 router.get('/users', getUsers); 
+
+
+
+
 
 async function delayTest(req, res, next) {
     try {
