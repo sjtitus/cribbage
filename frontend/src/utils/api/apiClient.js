@@ -37,7 +37,7 @@ class apiClient {
 
     // Execute a request 
     async execute(apiRequest) {
-        log.debug(`Execute reqquest ${apiRequest._id}`);
+        log.debug(`Executing request: ${apiRequest._id}`);
         const axiosResponse = await this._api.request(apiRequest._config);
         return axiosResponse;
     }

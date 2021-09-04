@@ -29,8 +29,8 @@
   ______________________________________________________________________________
 */
 import React, {createContext, useState, useEffect} from 'react';
-import { GetLoggedInUser } from '../api/apiCalls';
-import { UserModel } from '../shared/models/User'
+import { GetLoggedInUser } from '../api/apiCalls.js';
+import UserModel from '../shared/models/User.js'
 import propTypes from 'prop-types';
 //import UserState from '../shared/models/UserState';
 
@@ -39,7 +39,8 @@ const log = GetModuleLogger('UserContext');
 
 // Create user context with initial non-logged in state
 log.info(`Creating context`);
-const initialUserState = { loginTime: '', userID: -1, firstName: '', lastName: '' };
+const initialUserState = UserModel.initialState;
+
 log.debug(` . initial state: ${JSON.stringify(initialUserState)}`);
 // note: the value passed to createContext here is 
 // returned by useContext ONLY when there is NO enclosing provider
@@ -51,22 +52,16 @@ const { Provider } = UserContext;
 // UserContextProvider: wrapper around the context provider that supplies
 // the state and state setting functions to useContext
 const UserContextProvider = ( { children } ) => {
+    
     const [userState, setUserState] = useState(initialUserState);
 
     // First time the UserContext loads, see if the user
     // is already logged in; i.e. 'remember me'.
     useEffect(() => {
-    
-      const fetchData = async () => {
-           const loggedInUser = await GetLoggedInUser();
-           setUserState(loggedInUser);
-      }
-
-      
-      log.debug(`UserContext: (first load): checking if user is logged in`);
-      GetLoggedInUser().then( (apiResult) => {
-        log.debug(`UserContext: calling GetLoggedInUser: complete`);
-        setUserState(apiResult);
+      log.debug(`Application load: checking if user is logged in (remember me)`);
+      GetLoggedInUser().then( (user) => {
+         log.debug(`Application load: user state: ${JSON.stringify(user)}`);
+         setUserState(user);
       });
     },[]);
 

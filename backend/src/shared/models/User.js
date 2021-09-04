@@ -13,8 +13,8 @@ const initialState = {
     firstName: '',
     lastName: '',
     created: null,
-    modified: null,
-    deleted: null, 
+    modified: null
+//  deleted: null       Not exposed 
 };
 
 // required request fields
@@ -27,25 +27,18 @@ const testState = {
     lastName: 'titus',
     created: new Date('1969/03/04').toISOString(),
     modified: '',
-    deleted: ''
 };
    
 function validateState(state) {
     let errs = {};
-    if ('id' in state)           
-      { errs.id = Validation.ValidateNumber(state.id);                      }
-    if ('email' in state)        
-      { errs.email = Validation.ValidateEmail(state.email);                }
-    if ('firstName' in state)    
-      { errs.firstName = Validation.ValidateString(state.firstName);         }
-    if ('lastName' in state)     
-      { errs.lastName = Validation.ValidateString(state.lastName);          }
-    if ('created' in state)      
-      { errs.created = Validation.ValidateDate(state.created);      }
-    if ('modified' in state)   
-      { errs.modified = Validation.ValidateDate(state.modified);    }
-    if ('deleted' in state && (state.deleted !== null))     
-      { errs.deleted = Validation.ValidateDate(state.deleted);      }
+    if ('id' in state)           { errs.id = Validation.ValidateNumber(state.id);               }
+    if ('email' in state)        { errs.email = Validation.ValidateEmail(state.email);          }
+    if ('firstName' in state)    { errs.firstName = Validation.ValidateString(state.firstName); }
+    if ('lastName' in state)     { errs.lastName = Validation.ValidateString(state.lastName);   }
+    if ('created' in state)      { errs.created = Validation.ValidateDate(state.created);       }
+    if ('modified' in state)     { errs.modified = Validation.ValidateDate(state.modified);     }
+    //if ('deleted' in state && (state.deleted !== null))     
+    //  { errs.deleted = Validation.ValidateDate(state.deleted);      }
     return errs; 
 }
 

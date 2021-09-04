@@ -86,8 +86,13 @@ export class apiRequest {
             log.debug(`[${this._id}]: success`);
         }
         catch (err) {
-            log.debug(`[${this._id}]: error (class ${err.constructor.name})`);
-            this._result = {error: err, response: null}; 
+            const requestSent = Boolean(err.request);
+            const responseReceived = Boolean(err.response);
+            this._result = { 
+               error: err,
+               requestSent: requestSent,
+               responseReceived: responseReceived, 
+               response: (responseReceived) ? err.response:null }; 
             // Axios error response
             //  code (string)
             //  message
@@ -98,16 +103,7 @@ export class apiRequest {
             //  toJSON()
             this._state = (this._canceled) ? 'canceled':'error';
             this._time.finished = Date.now();
-            if (err.response) {
-              this._result.response = err.response;
-              log.error(`[${this._id}]: error (response received): ${err.message}`);
-            }
-            else if (err.request) {
-              log.error(`[${this._id}]: error (no response received): ${err.message}`);
-            }
-            else {
-              log.error(`[${this._id}]: error (no request made): ${err.message}`);
-            }
+            log.error(`[${this._id}]: error (requestSent=${requestSent}, responseReceived=${responseReceived}): ${err.message}`);
         }
         finally {
             assert(this._state !== 'running');

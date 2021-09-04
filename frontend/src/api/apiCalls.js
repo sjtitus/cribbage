@@ -3,9 +3,16 @@
       Backend API calls 
   ______________________________________________________________________________
 */
+import { strict as assert } from 'assert'; 
 import { GenerateAPIRequest } from './apiRequests.js';
 import { GetModuleLogger } from '../utils/Logger.js';
+import UserModel from '../shared/models/User.js';
+
 const log = GetModuleLogger('apiCalls');
+
+function _logApiError(msg, req, res) {
+   log.error(`${msg}: ${res.error.message} (request ID=${req._id}, sent=${res.requestSent}, gotResponse=${res.responseReceived})`);
+}
 
 ////______________________________________________________________________________
 //// User API Calls
@@ -13,17 +20,23 @@ const log = GetModuleLogger('apiCalls');
 
 export async function GetLoggedInUser() {
    const req = GenerateAPIRequest('GetLoggedInUser'); 
-   log.debug(`run request [${req._id}] GetLoggedInUser (${JSON.stringify(req)})`);
-   // run() will not throw 
-   const result = await req.run();
-   log.debug(`run request [${req._id}] GetLoggedInUser complete (error=${result.error})`);
-   // handle errors
+   let user = UserModel.initialState; 
+   log.debug(`GetLoggedInUser [${req._id}]`);
+   const result = await req.run(); // run() will not throw 
+   log.debug(`GetLoggedInUser [${req._id}]: complete (error=${!!result.error})`);
    if (result.error) {
+      _logApiError('Failed to retrieve logged in user information', req, result);
+   }
+   else if (result.response.status === 202) { // User not logged in
+      log.debug(`GetLoggedInUser [${req._id}]: not logged in`);
    }
    else {
-
+      assert(result.response.status === 200); 
+      log.debug(`GetLoggedInUser [${req._id}]: user is logged in`);
+      // User logged in 
+      const user = result.response.data;
    }
-   return result;
+   return user;  
 }
 
 /*

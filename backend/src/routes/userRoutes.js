@@ -43,38 +43,87 @@ const router = express.Router();
  *      responses:
  *          '200':
  *              $ref: '#/components/responses/User'
- *          '404':
- *              $ref: '#/components/responses/NotFound'
+ *          '202':
+ *              $ref: '#/components/responses/NotLoggedIn'
  *          '410':
  *              $ref: '#/components/responses/Gone'
  */ 
 async function GetLoggedInUser(req, res, next) {
-    try {
-        log.debug(`GetLoggedInUser: checking for user session`);
-        if ('user_id' in req.session) {
-            const uid = req.session.user_id;
-            log.debug(`GetLoggedInUser: active session with user_id ${uid}`);
-            let user = new User();
-            const userFound = await user.Load(uid);
-            if (userFound) {
-               res.status(200).json(user.UserObject);
-            }
-            else {
-               log.error(`GetLoggedInUser: existing session user ${uid} gone from database, clearing session/cookie`);
-               DeleteSession(req, res, log);
-               res.status(410).json({ "message": "user no longer exists" });
-            }
-        }
-        else {
+   try {
+      log.debug(`GetLoggedInUser: checking for user session`);
+      let user = new User();
+      if ('user_id' in req.session) {
+         const uid = req.session.user_id;
+         log.debug(`GetLoggedInUser: active session with user_id ${uid}`);
+         const userFound = await user.Load(uid);
+         if (userFound) {
+            res.status(200).json(user.UserObject);
+         }
+         else {
+            log.error(`GetLoggedInUser: existing session user ${uid} gone from database, clearing session/cookie`);
+            DeleteSession(req, res, log);
+            res.status(410).json({ "message": "user no longer exists" });
+         }
+      }
+         else {
             log.debug(`GetLoggedInUser: no 'user_id' in session (not logged in)`);
-            res.status(404).json({ "message": "user not logged in" });
-        }
+            res.status(202).json({ "message": "user not logged in" });
+         }
     }
     catch (err) {
       next(err)
     }
 }
 router.get('/user', GetLoggedInUser); 
+
+/**
+ * @openapi
+ *
+ *  /users:
+ *  post:
+ *      tags:
+ *          - user
+ *      description: Creates a new user
+ *      requestBody: 
+ *          $ref: '#/components/requestBodies/NewUserReqBody'
+ *      responses:
+ *          '201': 
+ *              $ref: '#/components/responses/NewUserCreated'
+ *          '400': 
+ *              $ref: '#/components/responses/BadRequest'
+ *          '410':
+ *              $ref: '#/components/responses/Gone'
+ */ 
+async function CreateNewUser(req, res, next) {
+    try {
+        log.debug(`CreateNewUser: checking for user session`);
+        if ('user_id' in req.session) {
+            const uid = req.session.user_id;
+            log.debug(`CreateNewUser: active session with user_id ${uid}`);
+            let user = new User();
+            const userFound = await user.Load(uid);
+            if (userFound) {
+               // user already logged in 
+               log.error(`CreateNewUser: create new user should not be allowed when session exists (uid=${uid})`);
+               res.status(400).json({ message: "user already logged in"});
+            }
+            else {
+               // session, but no user in db 
+               log.error(`CreateNewUser: existing session user ${uid} gone from database, clearing session/cookie`);
+               DeleteSession(req, res, log);
+               res.status(410).json({ "message": "user no longer exists" });
+            }
+        }
+        else {
+            // happy path: no session, create the user as long as it's not a duplicate 
+            res.status(201).json({ happy: "birthday" }); 
+        }
+    }
+    catch (err) {
+      next(err)
+    }
+}
+router.post('/users', CreateNewUser); 
 
 
 
@@ -139,22 +188,6 @@ router.get('/delayTest', delayTest);
 
 
 
-/**
- * @openapi
- *
- *  /users:
- *  post:
- *      tags:
- *          - user
- *      description: Creates a new user
- *      requestBody: 
- *          $ref: '#/components/requestBodies/NewUserReqBody'
- *      responses:
- *          '201': 
- *              $ref: '#/components/responses/NewUserCreated'
- *          '400': 
- *              $ref: '#/components/responses/BadRequest'
- */ 
 
 
 

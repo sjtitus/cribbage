@@ -117,7 +117,7 @@ export default
                     "parameters": {
                         "userIdParam": { "name": "userId", "required": true, "in": "path",
                             "description": "User id",
-                            "schema": { "type": "integer", "format": "int32" }
+                            "schema": { "type": "integer", "format": "int64" }
                         },
                         "skipParam": { "name": "skip", "required": true, "in": "query",
                             "description": "Number of items to skip",
@@ -185,6 +185,12 @@ export default
                                         "$ref": "#/components/schemas/User"
                                     }
                                 }
+                            }
+                        },
+                        "NotLoggedIn": {
+                            "description": "User is not logged in",
+                            "content": {
+                                "application/json": { "schema": { "$ref": "#/components/schemas/Message" } }
                             }
                         },
                         "Unauthorized": {

@@ -35,3 +35,8 @@
     const c = (typeof(x)=='string' && (x.match(utcTimestampRegexp) !== null))  
     return c ? '':`must be an ISO UTC timestamp string`;
  }
+
+ export function ValidateDate(x) {
+    const c = (Object.prototype.toString.call(x) === "[object Date]");
+    return c ? '':`must be a javascript Date object`;
+ }
