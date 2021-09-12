@@ -94,22 +94,22 @@ router.get('/user', GetLoggedInUser);
  *          '410':
  *              $ref: '#/components/responses/Gone'
  */ 
-async function CreateNewUser(req, res, next) {
+async function Signup(req, res, next) {
     try {
-        log.debug(`CreateNewUser: checking for user session`);
+        log.debug(`Signup: checking for user session`);
         if ('user_id' in req.session) {
             const uid = req.session.user_id;
-            log.debug(`CreateNewUser: active session with user_id ${uid}`);
+            log.debug(`Signup: active session with user_id ${uid}`);
             let user = new User();
             const userFound = await user.Load(uid);
             if (userFound) {
                // user already logged in 
-               log.error(`CreateNewUser: create new user should not be allowed when session exists (uid=${uid})`);
+               log.error(`Signup: create new user should not be allowed when session exists (uid=${uid})`);
                res.status(400).json({ message: "user already logged in"});
             }
             else {
                // session, but no user in db 
-               log.error(`CreateNewUser: existing session user ${uid} gone from database, clearing session/cookie`);
+               log.error(`Signup: existing session user ${uid} gone from database, clearing session/cookie`);
                DeleteSession(req, res, log);
                res.status(410).json({ "message": "user no longer exists" });
             }
@@ -123,7 +123,7 @@ async function CreateNewUser(req, res, next) {
       next(err)
     }
 }
-router.post('/users', CreateNewUser); 
+router.post('/users', Signup); 
 
 
 

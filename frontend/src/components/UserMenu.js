@@ -1,4 +1,4 @@
-import React, {useState, useContext} from 'react';
+import React from 'react';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import AccountCircle from '@material-ui/icons/AccountCircle';
@@ -22,7 +22,7 @@ export default function UserMenu(props) {
   
     let items = []
     props.options.map((opt) => { 
-        items.push(<MenuItem key={opt.label} onClick={opt.callback}>{opt.label}</MenuItem>);
+        return items.push(<MenuItem key={opt.label} onClick={opt.callback}>{opt.label}</MenuItem>);
     })    
 
     return (

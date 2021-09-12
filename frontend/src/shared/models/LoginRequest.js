@@ -42,8 +42,11 @@ function validateRequest(req) {
     return res; 
 }
 
-export default {
+const e  = {
    'defaultState': defaultState,
    'validateState': validateState,
    'validateRequest': validateRequest
-}
+};
+
+export default e; 
+

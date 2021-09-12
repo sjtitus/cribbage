@@ -7,6 +7,7 @@ import httpContext from 'express-http-context';
 import express from 'express';
 import Config from '../../config/Config.js';
 import {GetModuleLogger} from '../util/Logger.js';
+import cors from 'cors';
 
 // Swagger and JsDoc: API documentation
 import swaggerUi from 'swagger-ui-express';
@@ -79,12 +80,20 @@ class CribbageServer {
     this.app.use(RequestLogger);
     log.info(`    . middleware: incoming cookie`);
     this.app.use(DumpCookie);
-    log.info(`    . middleware: allow origin`);
-    this.app.use(function(req, res, next) {
-      res.setHeader('Access-Control-Allow-Origin','http://localhost:3000');
-      res.setHeader('Vary','Origin');
+    log.info(`    . middleware: cors`);
+    this.app.use(cors({
+      origin: 'http://localhost:3000'
+    }));
+    log.info(`    . middleware: final stage`);
+    this.app.use(function(req, res, next){
       next();
     });
+    //log.info(`    . middleware: allow origin`);
+    //this.app.use(function(req, res, next) {
+    //  res.setHeader('Access-Control-Allow-Origin','http://localhost:3000');
+    //  res.setHeader('Vary','Origin');
+    //  next();
+    //});
   }
 
   // Set up endpiont routes

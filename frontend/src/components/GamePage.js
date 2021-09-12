@@ -3,12 +3,13 @@
   Game Page 
   _____________________________________________________________________________
 */
-import React, {useContext} from 'react';
-import { Redirect } from "react-router-dom";
-import { UserContext } from '../contexts/UserContext';
+//import React, {useContext} from 'react';
+import React from 'react';
+//import { Redirect } from "react-router-dom";
+//import { UserContext } from '../contexts/UserContext';
 
-import {GetModuleLogger} from '../utils/Logger.js';
-const log = GetModuleLogger('GamePage');
+//import {GetModuleLogger} from '../utils/Logger.js';
+//const log = GetModuleLogger('GamePage');
 
 export default function GamePage() {
   

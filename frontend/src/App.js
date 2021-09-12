@@ -1,6 +1,7 @@
 import LandingPage from './components/LandingPage';
 import GamePage from './components/GamePage';
 import { UserContextProvider }  from './contexts/UserContext';
+import { NotificationContextProvider }  from './contexts/NotificationContext';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 //import { AxiosTest } from './components/AxiosTest';
                     // <LandingPage/>
@@ -9,6 +10,7 @@ function App() {
   
   return (
     <Router>
+          <NotificationContextProvider>
           <UserContextProvider>
           <div>
             <Switch>
@@ -21,6 +23,7 @@ function App() {
             </Switch>
           </div>
           </UserContextProvider>
+          </NotificationContextProvider>
     </Router>
   );
 }

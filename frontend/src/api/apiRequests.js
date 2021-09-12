@@ -12,16 +12,24 @@ const apiRequests = {
    GetLoggedInUser: {
       config: { method: 'get', url: '/user', headers: { accept: '*/*' } },
       request: null
-   } 
+   },
+   Login: {
+      config: { method: 'post', url: '/users', headers: { accept: '*/*' } },
+      request: null
+   }  
 };
 
 // lazy creation of API requests  
-export function GenerateAPIRequest(reqName) {
+export function GenerateAPIRequest(reqName, body=null) {
    assert(reqName in apiRequests,`unrecognized API request: ${reqName}`);
    let req = apiRequests[reqName].request;
+   let reqConfig = apiRequests[reqName].config;
+   if (body) {
+      reqConfig.data = body;
+   }
    if (req === null) {
       log.debug(`constructing API request ${reqName}`);
-      apiRequests[reqName].request = api.request(apiRequests[reqName].config);
+      apiRequests[reqName].request = api.request(reqConfig);
    }
    else if (req._state !== 'new') {
       log.debug(`regenerating API request ${reqName}: (old [${req._id}] state is ${req._state})`);

@@ -14,7 +14,8 @@ import Button from '@material-ui/core/Button';
 import SignupDialog from './SignupDialog';
 import LoginDialog from './LoginDialog';
 import { UserContext } from '../contexts/UserContext';
-//import { GetLoggedInUser } from '../contexts/UserActions';
+import { NotificationContext } from '../contexts/NotificationContext';
+import { Login } from '../api/apiCalls.js';
 import { Link } from 'react-router-dom';
 
 import {GetModuleLogger} from '../utils/Logger.js';
@@ -25,14 +26,16 @@ function LandingPage(props) {
   
   const [signUpOpen, setSignUpOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
-  const [alertSeverity, setAlertSeverity] = useState('error');
  
-  // LandingPage uses UseContext
+  // UserContext
   const userContext = useContext(UserContext);
-  const {userState, setUserState} = userContext;
-  
-  log.debug(`Loaded UserContext: userState = ${JSON.stringify(userState)}`);
+  const { userState, setUserState } = userContext;
+  log.debug(`Loaded UserContext: ${JSON.stringify(userState)}`);
+
+  // NotificationContext
+  const notificationContext = useContext(NotificationContext);
+  const {notificationState, dispatch: raiseNotification} = notificationContext;
+  log.debug(`Landing Page NotificationContext: ${JSON.stringify(notificationState)}`);
 
   const verticalGridProps = {
       container: true, 
@@ -66,9 +69,18 @@ function LandingPage(props) {
   const OnLoginSubmit = (formRef) => {
     const isValid = formRef.current.validateAll();
     if (isValid) {
-      const loginInfo = formRef.current.formState;
-      log.info(JSON.stringify(loginInfo));
-      //dispatch({type: 'login', payload: loginInfo});
+      const loginRequest = formRef.current.formState;
+      log.info(JSON.stringify(loginRequest));
+      Login(loginRequest).then( ({user, error}) => {
+         log.debug(`Login user result: ${JSON.stringify(user)}`);
+         setUserState(user);
+         if (error) { 
+            raiseNotification({type: 'error', payload: error}); 
+         }
+         else { 
+            raiseNotification({type: 'success', payload: 'user login successful'}); 
+         }
+      });
       setLoginOpen(false);
     } 
   }
@@ -108,27 +120,13 @@ function LandingPage(props) {
     <div>
       <SignupDialog isOpen={signUpOpen} onCancel={OnSignupCancel} onSubmit={OnSignupSubmit}/>
       <LoginDialog isOpen={loginOpen} onCancel={OnLoginCancel} onSubmit={OnLoginSubmit}/>
+      
       <Link to="/game"> Game Page </Link>
+      
       <MyAppBar onLoginClick={() => setLoginOpen(true)}/>
-      <AlertBar severity={alertSeverity} message={alertMessage}/> 
-      <Button
-        variant="outlined"
-        onClick={() => {
-          setAlertMessage("this is a message");
-          setAlertSeverity('error');
-        }}
-      >
-        one
-      </Button>
-      <Button
-        variant="outlined"
-        onClick={() => {
-          setAlertMessage("this is a success message");
-          setAlertSeverity('success');
-        }}
-      >
-        two
-      </Button>
+      <AlertBar severity={notificationState.latest.severity} message={notificationState.latest.message} />
+
+
       <Grid { ...verticalGridProps}> 
         <Grid item>
             <Typography variant= "h4" align="center"> Let's Play Cribbage </Typography>
@@ -144,6 +142,21 @@ function LandingPage(props) {
     </div>
   );
 }
-
-                // <Button onClick={()=>{setSignUpOpen(true)}} variant="contained" color="primary"> Sign Up </Button>
 export default LandingPage; 
+
+/*
+      <Button
+        variant="outlined"
+        onClick={() => { dispatch({type: 'error', payload: 'this is an error message'}) }}
+      >
+        one
+      </Button>
+      <Button
+        variant="outlined"
+        onClick={() => { dispatch({type: 'success', payload: 'this is a success message'}) }}
+      >
+        two
+      </Button>
+
+      <Button onClick={()=>{setSignUpOpen(true)}} variant="contained" color="primary"> Sign Up </Button>
+*/

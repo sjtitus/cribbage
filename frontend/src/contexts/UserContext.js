@@ -1,38 +1,28 @@
 /*______________________________________________________________________________
-  UserContext
+   UserContext
 
-    Provides application-global user state. 
+      Provides global user state. 
     
-    Usage:
+      Usage:
         import { UserContext, UserContextProvider } from userContext;
 
-    Provide the context to children:
-      <UserContextProvider> ... </UserContextProvider>
+      Provide the context to children:
+         <UserContextProvider> ... </UserContextProvider>
 
-    Use the context in a child 
-        const userContext = useContext(UserContext);
-        {state, dispatch} = userContext;
-        state = current user state (see below)
-        dispatch = dispatch function (see useReducer)
-    
-    Dispatch Actions: login and logout
-        userContext.dispatch( {type: 'logout'} );
-        userContext.dispatch( {type: 'login', token: <authToken>} );
+      Use the context in a child 
+         const userContext = useContext(UserContext);
+         {userState, setUserState} = userContext;
+         userState = current user state (see below)
+         setUserState = state setter 
 
-    UserState (from UserState):
-        {
-          loginTime: timestamp 
-          userID: number
-          firstName: string
-          lastName: string 
-        }
+      See also: shared/models/User.js
   ______________________________________________________________________________
 */
-import React, {createContext, useState, useEffect} from 'react';
+import React, {createContext, useState, useEffect, useContext} from 'react';
 import { GetLoggedInUser } from '../api/apiCalls.js';
 import UserModel from '../shared/models/User.js'
+import { NotificationContext } from '../contexts/NotificationContext';
 import propTypes from 'prop-types';
-//import UserState from '../shared/models/UserState';
 
 import {GetModuleLogger} from '../utils/Logger.js';
 const log = GetModuleLogger('UserContext');
@@ -41,7 +31,7 @@ const log = GetModuleLogger('UserContext');
 log.info(`Creating context`);
 const initialUserState = UserModel.initialState;
 
-log.debug(` . initial state: ${JSON.stringify(initialUserState)}`);
+log.debug(`Initial state: ${JSON.stringify(initialUserState)}`);
 // note: the value passed to createContext here is 
 // returned by useContext ONLY when there is NO enclosing provider
 const UserContext = createContext(initialUserState);
@@ -52,22 +42,31 @@ const { Provider } = UserContext;
 // UserContextProvider: wrapper around the context provider that supplies
 // the state and state setting functions to useContext
 const UserContextProvider = ( { children } ) => {
+  
+   const notificationContext = useContext(NotificationContext);
+   const {notificationState, dispatch: raiseNotification} = notificationContext;
+   log.debug(`User Context NotificationContext: ${JSON.stringify(notificationState)}`);
     
     const [userState, setUserState] = useState(initialUserState);
 
     // First time the UserContext loads, see if the user
     // is already logged in; i.e. 'remember me'.
     useEffect(() => {
-      log.debug(`Application load: checking if user is logged in (remember me)`);
-      GetLoggedInUser().then( (user) => {
-         log.debug(`Application load: user state: ${JSON.stringify(user)}`);
+      log.debug(`One-time load: checking if user is logged in (remember me)`);
+      GetLoggedInUser().then( ({user, error}) => {
+         log.debug(`One-time load: user state: ${JSON.stringify(user)}`);
          setUserState(user);
+         if (error) { 
+            raiseNotification({type: 'error', payload: error}); 
+         }
+         else { 
+            raiseNotification({type: 'success', payload: 'retrieved user login state'}); 
+         }
       });
-    },[]);
+    },[ raiseNotification ]);
 
     return <Provider value={{ userState, setUserState }}>{children}</Provider>;
 };
-
 
 UserContextProvider.propTypes = {
   children: propTypes.node

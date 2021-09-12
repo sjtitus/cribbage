@@ -1,6 +1,6 @@
 
-import React, {useContext} from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import React from 'react';
+//import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
@@ -8,7 +8,7 @@ import IconButton from '@material-ui/core/IconButton';
 import HomeIcon from '@material-ui/icons/Home';
 import Button from '@material-ui/core/Button';
 import UserMenu from './UserMenu';
-import { UserContext } from '../contexts/UserContext';
+//import { UserContext } from '../contexts/UserContext';
 import { withStyles } from '@material-ui/core/styles';
  
 const styles = (theme) => ({
@@ -41,12 +41,12 @@ function MyAppBar(props) {
   
   const {
       classes,
-      onLoginClick,
-      ...other
+      onLoginClick
+      //...other
   } = props; 
 
-  const userContext = useContext(UserContext);
-  const { userState, setUserState } = userContext;
+  //const userContext = useContext(UserContext);
+  //const { userState, setUserState } = userContext;
 
   const loggedIn = false;
   const LoginButton = (!loggedIn) ?

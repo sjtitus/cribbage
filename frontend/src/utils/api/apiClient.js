@@ -3,7 +3,7 @@
   _____________________________________________________________________________
 */
 import axios from 'axios';
-import { strict as assert } from 'assert';
+//import { strict as assert } from 'assert';
 import { apiRequest } from './apiRequest.js';
 import { GetModuleLogger } from '../Logger.js';
 import Config from '../../config/Config.js';
@@ -54,6 +54,8 @@ function getSingleton() {
     return instance;
 }
 
-export default {
-    Instance: getSingleton,
-}
+const e = {
+    Instance: getSingleton
+};
+
+export default e; 

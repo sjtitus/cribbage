@@ -50,14 +50,14 @@ function JoinGame(props) {
       buttonProps,
       classes,
       className,
-      widthCols,
-      ...other
+      widthCols
+      //...other
   } = props; 
 
   //console.log(props);
 
   const jText = joinText || "Enter your game code to join an existing game"; 
-  const bText = joinText || "Join"; 
+  const bText = buttonText || "Join"; 
 
   const verticalGridProps = {
       classes: classes,

@@ -49,11 +49,13 @@ function isValid(state) {
     }
     const errs = validateState(state);
     return Object.values(errs).every( (v) => (v===''));
-}
+} 
 
-export default {
+const e = {
    'initialState': initialState,
    'validateState': validateState,
    'isValid': isValid,
    'testState': testState,
-}
+};
+
+export default e;

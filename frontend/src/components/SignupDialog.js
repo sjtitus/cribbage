@@ -1,4 +1,4 @@
-import React, {useState, useContext, useRef} from 'react';
+import React, { useRef } from 'react';
 import { makeStyles } from '@material-ui/core';
 import Dialog from '@material-ui/core/Dialog';
 import Button from '@material-ui/core/Button';
@@ -7,6 +7,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { SignupForm }  from './SignupForm';
 import PropTypes from 'prop-types';
+
 
 
 const DialogStyles = makeStyles( theme => ({

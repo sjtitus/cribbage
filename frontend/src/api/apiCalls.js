@@ -11,21 +11,42 @@ import UserModel from '../shared/models/User.js';
 const log = GetModuleLogger('apiCalls');
 
 function _logApiError(msg, req, res) {
-   log.error(`${msg}: ${res.error.message} (request ID=${req._id}, sent=${res.requestSent}, gotResponse=${res.responseReceived})`);
+   const longMsg = `${msg}: ${res.error.message} (request ID=${req._id}, sent=${res.requestSent}, gotResponse=${res.responseReceived})`;
+   log.error(longMsg);
+   return longMsg;
 }
 
 ////______________________________________________________________________________
 //// User API Calls
 ////______________________________________________________________________________
 
+export async function Login(validatedLoginRequest) {
+   const req = GenerateAPIRequest('Login', validatedLoginRequest);
+   const { email } = validatedLoginRequest; 
+   let user = null; 
+   let error = null; 
+   log.debug(`Login [${req._id}]`);
+   const result = await req.run(); // run() will not throw 
+   log.debug(`Login [${req._id}]: complete (error=${!!result.error})`);
+   if (result.error) {
+      error = _logApiError(`Login failed for user with email ${email}`, req, result);
+   }
+   else { 
+      user = result.response.data;
+   }
+   return { user, error };  
+}
+
+
 export async function GetLoggedInUser() {
    const req = GenerateAPIRequest('GetLoggedInUser'); 
-   let user = UserModel.initialState; 
+   let user = UserModel.initialState;
+   let error = null; 
    log.debug(`GetLoggedInUser [${req._id}]`);
    const result = await req.run(); // run() will not throw 
    log.debug(`GetLoggedInUser [${req._id}]: complete (error=${!!result.error})`);
    if (result.error) {
-      _logApiError('Failed to retrieve logged in user information', req, result);
+      error = _logApiError('Failed to retrieve logged in user information', req, result);
    }
    else if (result.response.status === 202) { // User not logged in
       log.debug(`GetLoggedInUser [${req._id}]: not logged in`);
@@ -34,9 +55,9 @@ export async function GetLoggedInUser() {
       assert(result.response.status === 200); 
       log.debug(`GetLoggedInUser [${req._id}]: user is logged in`);
       // User logged in 
-      const user = result.response.data;
+      user = result.response.data;
    }
-   return user;  
+   return { user, error };  
 }
 
 /*
