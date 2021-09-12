@@ -3,7 +3,6 @@
  *_________________________________________________________________________________________________
 */
 
-
 /*
 If a user is attempting to authenticate, but provides invalid credentials, the response should have a status of 401, regardless of if you 
 are using Basic Authorization or not. 401 indicates that authentication failed, but the user can alter their request and attempt again.
@@ -26,6 +25,8 @@ request body does not meet your specifications.
 import express from 'express';
 import { User } from '../models/User.js'; 
 import { DeleteSession } from './Helpers.js'; 
+import SignupRequest from '../shared/models/SignUpRequest.js';
+
 import { GetModuleLogger } from '../util/Logger.js';
 const log = GetModuleLogger('UserRoutes');
 
@@ -95,33 +96,45 @@ router.get('/user', GetLoggedInUser);
  *              $ref: '#/components/responses/Gone'
  */ 
 async function Signup(req, res, next) {
-    try {
-        log.debug(`Signup: checking for user session`);
-        if ('user_id' in req.session) {
-            const uid = req.session.user_id;
-            log.debug(`Signup: active session with user_id ${uid}`);
-            let user = new User();
-            const userFound = await user.Load(uid);
-            if (userFound) {
-               // user already logged in 
-               log.error(`Signup: create new user should not be allowed when session exists (uid=${uid})`);
-               res.status(400).json({ message: "user already logged in"});
-            }
-            else {
-               // session, but no user in db 
-               log.error(`Signup: existing session user ${uid} gone from database, clearing session/cookie`);
-               DeleteSession(req, res, log);
-               res.status(410).json({ "message": "user no longer exists" });
-            }
-        }
-        else {
-            // happy path: no session, create the user as long as it's not a duplicate 
+   try {
+      log.debug(`Signup: checking for user session`);
+      if ('user_id' in req.session) {
+         const uid = req.session.user_id;
+         log.debug(`Signup: active session with user_id ${uid}`);
+          let user = new User();
+          const userFound = await user.Load(uid);
+         if (userFound) {
+            // user already logged in 
+            log.error(`Signup: create new user should not be allowed when session exists (uid=${uid})`);
+            res.status(400).json({ message: "user already logged in"});
+         }
+         else {
+            // session, but no user in db 
+            log.error(`Signup: existing session user ${uid} gone from database, clearing session/cookie`);
+            DeleteSession(req, res, log);
+            res.status(410).json({ "message": "user no longer exists" });
+         }
+      }
+      else {
+         log.debug(`Signup: no user session found, validating request`);
+         // validate the signup request
+         const { error, message } = SignupRequest.validateRequest(req);
+         if (error) {
+            log.debug(`Signup: bad request: ${message}`);
+            res.status(400).json({ message: message});
+         }
+         else {
+            // request is good
+            // const requiredFields = ['firstName', 'lastName', 'email', 'password', 'passwordRepeat', 'rememberMe'];
+            const {firstName, lastName, email, password, passwordRepeat, rememberMe } = req.body;
+            log.debug(`Signup: request to signup user with email '${req.body.email}'`);
             res.status(201).json({ happy: "birthday" }); 
-        }
-    }
-    catch (err) {
+         }
+      }
+   }
+   catch (err) { 
       next(err)
-    }
+   }
 }
 router.post('/users', Signup); 
 
