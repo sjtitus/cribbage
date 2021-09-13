@@ -27,28 +27,32 @@ function validateState(state) {
 
 // validate incoming request: body must contain required fields with valid values
 function validateRequest(req) {
-    let res = {
-        error: false,
-        message: ''
-    };
-    // required fields must be present
-    if (!('body' in req) || !(requiredFields.every((f) => (f in req.body)))) {
-        res.error = true;
-        res.message = "missing one or more required fields";
-    }
-    else { 
-        // fields must have valid values 
-        const errs = validateState(req.body);
-        if (Object.keys(errs).length > 0) {
-            res.error = true;
-            res.message = "one or more fields are invalid";
-        }
-    } 
-    return res; 
+   let res = {
+      error: false,
+      message: ''
+   };
+   // required fields must be present
+   if (!('body' in req) || !(requiredFields.every((f) => (f in req.body)))) {
+      res.error = true;
+      res.message = "missing body or 1+ fields";
+   }
+   else { 
+      // fields must have valid values 
+      const errs = validateState(req.body);
+      const badFields = Object.keys(errs).filter((k) => (errs[k].length > 0));
+      if (badFields.length > 0) {
+         const bs = badFields.join(', ');
+         res.error = true;
+         res.message = `invalid fields in request: ${bs}`;
+      }
+   } 
+   return res; 
 }
 
-export default {
+const e = {
    'defaultState': defaultState,
    'validateState': validateState,
    'validateRequest': validateRequest
-} 
+};
+
+export default e; 

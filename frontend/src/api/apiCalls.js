@@ -11,7 +11,11 @@ import UserModel from '../shared/models/User.js';
 const log = GetModuleLogger('apiCalls');
 
 function _logApiError(msg, req, res) {
-   const longMsg = `${msg}: ${res.error.message} (request ID=${req._id}, sent=${res.requestSent}, gotResponse=${res.responseReceived})`;
+   let dataMessage = null;
+   try { dataMessage = res.response.data.message; } catch (err) {};
+   const longMsg = (dataMessage) ? 
+      `${msg}: ${res.error.message}: ${dataMessage} (request ID=${req._id}, sent=${res.requestSent}, gotResponse=${res.responseReceived})`:
+      `${msg}: ${res.error.message} (request ID=${req._id}, sent=${res.requestSent}, gotResponse=${res.responseReceived})`;
    log.error(longMsg);
    return longMsg;
 }
@@ -19,6 +23,24 @@ function _logApiError(msg, req, res) {
 ////______________________________________________________________________________
 //// User API Calls
 ////______________________________________________________________________________
+
+export async function Signup(validatedSignupRequest) {
+   const req = GenerateAPIRequest('Signup', validatedSignupRequest);
+   const { email } = validatedSignupRequest; 
+   let user = null; 
+   let error = null; 
+   log.debug(`Signup [${req._id}]`);
+   const result = await req.run(); // run() will not throw 
+   log.debug(`Signup [${req._id}]: complete (error=${!!result.error})`);
+   if (result.error) {
+      error = _logApiError(`Signup failed for user with email ${email}`, req, result);
+   }
+   else { 
+      user = result.response.data;
+   }
+   return { user, error };  
+}
+
 
 export async function Login(validatedLoginRequest) {
    const req = GenerateAPIRequest('Login', validatedLoginRequest);

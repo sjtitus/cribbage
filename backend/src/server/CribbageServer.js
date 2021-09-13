@@ -82,7 +82,7 @@ class CribbageServer {
     this.app.use(DumpCookie);
     log.info(`    . middleware: cors`);
     this.app.use(cors({
-      origin: 'http://localhost:3000'
+      origin: 'http://cribbagehost:3000'
     }));
     log.info(`    . middleware: final stage`);
     this.app.use(function(req, res, next){

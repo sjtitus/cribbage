@@ -15,7 +15,8 @@ export default
                 httpOnly: true,
                 secure: false,
                 sameSite: false,
-            }
+            },
+            maxAgeDays: 7
         },
         sessionStore: {
             checkPeriod: 86400000,

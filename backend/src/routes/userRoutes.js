@@ -26,7 +26,7 @@ import express from 'express';
 import { User } from '../models/User.js'; 
 import { DeleteSession } from './Helpers.js'; 
 import SignupRequest from '../shared/models/SignUpRequest.js';
-
+import Config from '../../config/Config.js';
 import { GetModuleLogger } from '../util/Logger.js';
 const log = GetModuleLogger('UserRoutes');
 
@@ -66,10 +66,10 @@ async function GetLoggedInUser(req, res, next) {
             res.status(410).json({ "message": "user no longer exists" });
          }
       }
-         else {
-            log.debug(`GetLoggedInUser: no 'user_id' in session (not logged in)`);
-            res.status(202).json({ "message": "user not logged in" });
-         }
+      else {
+         log.debug(`GetLoggedInUser: no 'user_id' in session (not logged in)`);
+         res.status(202).json({ "message": "user not logged in" });
+      }
     }
     catch (err) {
       next(err)
@@ -98,18 +98,18 @@ router.get('/user', GetLoggedInUser);
 async function Signup(req, res, next) {
    try {
       log.debug(`Signup: checking for user session`);
+      let user = new User();
       if ('user_id' in req.session) {
          const uid = req.session.user_id;
          log.debug(`Signup: active session with user_id ${uid}`);
-          let user = new User();
-          const userFound = await user.Load(uid);
+         const userFound = await user.Load(uid);
          if (userFound) {
             // user already logged in 
             log.error(`Signup: create new user should not be allowed when session exists (uid=${uid})`);
-            res.status(400).json({ message: "user already logged in"});
+            res.status(400).json({ message: "user already logged in" });
          }
          else {
-            // session, but no user in db 
+            // session, but no user in db (should NOT happen) 
             log.error(`Signup: existing session user ${uid} gone from database, clearing session/cookie`);
             DeleteSession(req, res, log);
             res.status(410).json({ "message": "user no longer exists" });
@@ -121,14 +121,24 @@ async function Signup(req, res, next) {
          const { error, message } = SignupRequest.validateRequest(req);
          if (error) {
             log.debug(`Signup: bad request: ${message}`);
-            res.status(400).json({ message: message});
+            res.status(400).json({ message: message });
          }
          else {
             // request is good
-            // const requiredFields = ['firstName', 'lastName', 'email', 'password', 'passwordRepeat', 'rememberMe'];
             const {firstName, lastName, email, password, passwordRepeat, rememberMe } = req.body;
-            log.debug(`Signup: request to signup user with email '${req.body.email}'`);
-            res.status(201).json({ happy: "birthday" }); 
+            log.debug(`Signup: create new user: email=${req.body.email}, firstName=${firstName}, lastName=${lastName}`);
+            await user.Create(email, firstName, lastName, password);
+            // if we got here, user creation was successful
+            const userObject = user.UserObject;
+            log.debug(`Signup: new user created: email=${userObject.email}, id=${userObject.id}`);
+            // if rememberme is set, drop a cookie
+            if (rememberMe) {
+               const sessionDays = Config.server.session.maxAgeDays;
+               log.debug(`Signup: establishing session/cookie for user ${userObject.email}`);
+               req.session.user_id = userObject.id; 
+               req.session.cookie.maxAge = sessionDays * 24 * 60 * 60 * 1000;
+            } 
+            res.status(201).json(userObject);
          }
       }
    }

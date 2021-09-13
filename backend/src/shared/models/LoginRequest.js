@@ -34,9 +34,11 @@ function validateRequest(req) {
     else { 
         // fields must have valid values 
         const errs = validateState(req.body);
-        if (Object.keys(errs).length > 0) {
-            res.error = true;
-            res.message = "one or more fields are invalid";
+        const badFields = Object.keys(errs).filter((k) => (errs[k].length > 0));
+        if (badFields.length > 0) {
+           const bs = badFields.join(', ');
+          res.error = true;
+          res.message = `invalid fields in request: ${bs}`;
         }
     } 
     return res; 

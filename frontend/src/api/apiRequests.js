@@ -16,7 +16,11 @@ const apiRequests = {
    Login: {
       config: { method: 'post', url: '/users', headers: { accept: '*/*' } },
       request: null
-   }  
+   },
+   Signup: {
+      config: { method: 'post', url: '/users', headers: { accept: '*/*' } },
+      request: null
+   }
 };
 
 // lazy creation of API requests  

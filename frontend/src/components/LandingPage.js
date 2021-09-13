@@ -15,63 +15,79 @@ import SignupDialog from './SignupDialog';
 import LoginDialog from './LoginDialog';
 import { UserContext } from '../contexts/UserContext';
 import { NotificationContext } from '../contexts/NotificationContext';
-import { Login } from '../api/apiCalls.js';
+import { Login, Signup } from '../api/apiCalls.js';
 import { Link } from 'react-router-dom';
 
 import {GetModuleLogger} from '../utils/Logger.js';
 const log = GetModuleLogger('LandingPage');
 
-
 function LandingPage(props) {
-  
-  const [signUpOpen, setSignUpOpen] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
  
-  // UserContext
-  const userContext = useContext(UserContext);
-  const { userState, setUserState } = userContext;
-  log.debug(`Loaded UserContext: ${JSON.stringify(userState)}`);
+   // State: signup/login dialogs open/closed
+   const [signUpOpen, setSignUpOpen] = useState(false);
+   const [loginOpen, setLoginOpen] = useState(false);
+ 
+   // UserContext: page will have access to user info
+   const userContext = useContext(UserContext);
+   const { userState, setUserState } = userContext;
+   //log.debug(`Loaded UserContext: ${JSON.stringify(userState)}`);
 
-  // NotificationContext
-  const notificationContext = useContext(NotificationContext);
-  const {notificationState, dispatch: raiseNotification} = notificationContext;
-  log.debug(`Landing Page NotificationContext: ${JSON.stringify(notificationState)}`);
+   // NotificationContext: page will raise notifications 
+   const notificationContext = useContext(NotificationContext);
+   const {notificationState, dispatch: raiseNotification} = notificationContext;
+   //log.debug(`Landing Page NotificationContext: ${JSON.stringify(notificationState)}`);
 
-  const verticalGridProps = {
-      container: true, 
-      direction: 'column',
-      alignContent: 'center',
-      spacing: 4
-  }
 
-  const codeValidationFunc = (code) => {
-    log.info(`validating code ${code}`);
-    return (code.length > 6);
-  }
+   //__________________________________________________________________________
+   // Join Game 
+   const codeValidationFunc = (code) => {
+      log.info(`validating code ${code}`);
+      return (code.length > 6);
+   }
   
-  const JoinGameFunc = (code) => {
-    log.info(`joining game: ${code}`);
-  }
+   const JoinGameFunc = (code) => {
+      log.info(`joining game: ${code}`);
+   }
 
-  const OnSignupSubmit = (formRef) => {
-    const isValid = formRef.current.validateAll();
-    if (isValid) {
-      const signUpInfo = formRef.current.formState;
-      log.info(JSON.stringify(signUpInfo));
+   //__________________________________________________________________________
+   // Signup 
+   const signupHandler = async (signupRequest) => {
+      try {
+         log.debug(`Making async signup request: ${JSON.stringify(signupRequest)}`);
+         const { user, error } = await Signup(signupRequest);
+         log.debug(`Signup user result: ${JSON.stringify(user)}`);
+         setUserState(user);
+         if (error) { 
+            raiseNotification({type: 'error', payload: `user signup failed: ${error}`}); 
+         }
+         else { 
+            raiseNotification({type: 'success', payload: `user signup successful: ${user.firstName} ${user.lastName} (id=${user.id})`}); 
+         }
+      }
+      catch (err) {
+         log.error(`Error handling signup request: ${err.message}`);
+         raiseNotification({type: 'error', payload: err.message}); 
+      }
+   };
+
+   const OnSignupSubmit = (signupRequest, formRef) => {
+      //const isValid = formRef.current.validateAll();
+      // const signUpInfo = formRef.current.formState;
+      signupHandler(signupRequest); 
       setSignUpOpen(false);
-    } 
-  }
+   }
   
-  const OnSignupCancel = (arg) => {
-    setSignUpOpen(false);
-  }
-  
-  const OnLoginSubmit = (formRef) => {
-    const isValid = formRef.current.validateAll();
-    if (isValid) {
-      const loginRequest = formRef.current.formState;
-      log.info(JSON.stringify(loginRequest));
-      Login(loginRequest).then( ({user, error}) => {
+   const OnSignupCancel = (arg) => {
+      setSignUpOpen(false);
+   }
+
+
+   //__________________________________________________________________________
+   // Handle Login
+   const loginHandler = async (loginRequest) => {
+      try {
+         log.debug(`Making async login request: ${JSON.stringify(loginRequest)}`);
+         const { user, error } = await Login(loginRequest);
          log.debug(`Login user result: ${JSON.stringify(user)}`);
          setUserState(user);
          if (error) { 
@@ -80,21 +96,40 @@ function LandingPage(props) {
          else { 
             raiseNotification({type: 'success', payload: 'user login successful'}); 
          }
-      });
-      setLoginOpen(false);
-    } 
-  }
-  
-  const OnLoginCancel = (arg) => {
-    setLoginOpen(false);
-  }
-  
-  const onStartNewGame = (arg) => {
-    log.info(`Starting a new game...`);
-  }
+      }
+      catch (err) {
+         log.error(`Error handling login request: ${err.message}`);
+         raiseNotification({type: 'error', payload: err.message}); 
+      }
+   };
 
-  const loggedIn = false;
-  const SignUpComponent = (!loggedIn) ?
+   const OnLoginSubmit = (loginRequest, formRef) => {
+      loginHandler(loginRequest); 
+      setLoginOpen(false);
+   }
+  
+   const OnLoginCancel = (arg) => {
+      setLoginOpen(false);
+   }
+   
+   const loggedIn = false;
+
+
+   //__________________________________________________________________________
+   // Start a new game 
+   const onStartNewGame = (arg) => {
+      log.info(`Starting a new game...`);
+   }
+ 
+
+   const verticalGridProps = {
+      container: true, 
+      direction: 'column',
+      alignContent: 'center',
+      spacing: 4
+   }
+
+   const SignUpComponent = (!loggedIn) ?
         (<Grid item>
             <Grid container direction="column" alignContent="center">
               <Grid item> 
@@ -116,33 +151,34 @@ function LandingPage(props) {
             </Grid>
         </Grid>);
 
-  return (
-    <div>
-      <SignupDialog isOpen={signUpOpen} onCancel={OnSignupCancel} onSubmit={OnSignupSubmit}/>
-      <LoginDialog isOpen={loginOpen} onCancel={OnLoginCancel} onSubmit={OnLoginSubmit}/>
-      
-      <Link to="/game"> Game Page </Link>
-      
-      <MyAppBar onLoginClick={() => setLoginOpen(true)}/>
-      <AlertBar severity={notificationState.latest.severity} message={notificationState.latest.message} />
+   return (
+      <div>
+         <SignupDialog isOpen={signUpOpen} onCancel={OnSignupCancel} onSubmit={OnSignupSubmit}/>
+         <LoginDialog isOpen={loginOpen} onCancel={OnLoginCancel} onSubmit={OnLoginSubmit}/>
+         
+         <Link to="/game"> Game Page </Link>
+         
+         <MyAppBar onLoginClick={() => setLoginOpen(true)}/>
+         <AlertBar severity={notificationState.latest.severity} message={notificationState.latest.message} />
 
-
-      <Grid { ...verticalGridProps}> 
-        <Grid item>
-            <Typography variant= "h4" align="center"> Let's Play Cribbage </Typography>
-        </Grid>
-        <Grid item>
-            <img src={cribbageHandImage} alt="cribbage hand"></img>
-        </Grid>
-        { SignUpComponent } 
-        <Grid item>
-            <JoinGame onChange={codeValidationFunc} onJoin={JoinGameFunc}/> 
-        </Grid>
-      </Grid>
-    </div>
-  );
+         <Grid { ...verticalGridProps}> 
+         <Grid item>
+               <Typography variant= "h4" align="center"> Let's Play Cribbage </Typography>
+         </Grid>
+         <Grid item>
+               <img src={cribbageHandImage} alt="cribbage hand"></img>
+         </Grid>
+         { SignUpComponent } 
+         <Grid item>
+               <JoinGame onChange={codeValidationFunc} onJoin={JoinGameFunc}/> 
+         </Grid>
+         </Grid>
+      </div>
+   );
 }
+
 export default LandingPage; 
+
 
 /*
       <Button

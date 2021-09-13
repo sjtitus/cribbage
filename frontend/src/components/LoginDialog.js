@@ -27,19 +27,23 @@ const DialogStyles = makeStyles( theme => ({
 
 export default function LoginDialog(props) {
     
-    const formRef = useRef();
+   const formRef = useRef();
     
-    const DialogClasses = DialogStyles();
+   const DialogClasses = DialogStyles();
 
-    function onCancel() {
-        props.onCancel();
-    }
+   function onCancel() {
+      props.onCancel();
+   }
 
-    function onSubmit() {
-        props.onSubmit(formRef);
-    }
-
-    return (
+   function onSubmit() {
+      const isValid = formRef.current.validateAll();
+      if (isValid) {
+         const loginRequest = formRef.current.formState;
+         props.onSubmit(loginRequest, formRef);
+      }
+   }
+  
+   return (
         <Dialog open={props.isOpen} fullWidth maxWidth='xs'>
             <DialogTitle classes={{ root: DialogClasses.titleRoot }}>
                 Log In 

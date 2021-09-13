@@ -22,6 +22,16 @@ export class User {
    get UserObject() { return this._user; }
    get DBObject() { return this._dbuser; }
 
+   async Create( email, firstName, lastName, password ) {
+      assert(this._user.id === -1, `Load: user must be uninitialized`);
+      assert(email.length && firstName.length && lastName.length);
+      log.debug(`Create: email=${email}, firstName=${firstName}, lastName=${lastName}`);
+      const dbUser = await DbUser.create(email, firstName, lastName, password);
+      this._dbUser = dbUser;
+      this._convert();
+   }
+
+   // Note: returns NULL if user DNE
    async Load(userId) {
       assert(this._user.id === -1, `Load: user must be uninitialized`);
       log.debug(`Load: id=${userId}`);
@@ -31,15 +41,18 @@ export class User {
       return (dbUser !== null);
    }
 
-   async Save() {
+   async Update() {
+   }
+
+   async Delete() {
    }
 
    // Convert the DB user to a JS user 
    _convert() {
       if (this._dbUser === null) {
-         log.warning(`User model: db object is null id=${this._user.id}: reinitializing model`);
+         log.error(`User model: attempt to convert null db object to JS object`);
          this._user = { ...JSUser.initialState };
-         return false;
+         throw new Error(`User model: attempt to convert null db object to JS object`);
       }
       this._user.id = this._dbUser["id"];
       this._user.email = this._dbUser["email"];

@@ -4,7 +4,7 @@ const e =
     logLevels: {
     },
     apiClient: {
-        baseURL: 'http://localhost:8080', 
+        baseURL: 'http://cribbagehost:8080', 
         timeout: 5000
     }
 };

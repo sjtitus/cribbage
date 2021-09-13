@@ -34,7 +34,7 @@ function validateRequest(req) {
     // required fields must be present
     if (!('body' in req) || !(requiredFields.every((f) => (f in req.body)))) {
         res.error = true;
-        res.message = "missing one or more required fields";
+        res.message = "missing body or 1+ fields";
     }
     else { 
         // fields must have valid values 

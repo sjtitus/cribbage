@@ -9,7 +9,6 @@ import { SignupForm }  from './SignupForm';
 import PropTypes from 'prop-types';
 
 
-
 const DialogStyles = makeStyles( theme => ({
     actionsRoot: { 
         justifyContent: 'center' 
@@ -28,19 +27,23 @@ const DialogStyles = makeStyles( theme => ({
 
 export default function SignupDialog(props) {
     
-    const formRef = useRef();
+   const formRef = useRef();
     
-    const DialogClasses = DialogStyles();
+   const DialogClasses = DialogStyles();
 
-    function onCancel() {
-        props.onCancel();
-    }
+   function onCancel() {
+      props.onCancel();
+   }
 
-    function onSubmit() {
-        props.onSubmit(formRef);
-    }
+   function onSubmit() {
+      const isValid = formRef.current.validateAll();
+      if (isValid) {
+         const signupRequest = formRef.current.formState;
+         props.onSubmit(signupRequest, formRef);
+      }
+   }
 
-    return (
+   return (
         <Dialog open={props.isOpen} fullWidth maxWidth='xs'>
             <DialogTitle classes={{ root: DialogClasses.titleRoot }}>
                 Sign Up 
@@ -53,7 +56,7 @@ export default function SignupDialog(props) {
                 <Button variant='outlined' color='primary' size='small' onClick={onCancel} classes={{ root: DialogClasses.buttonRoot }}> cancel </Button>
             </DialogActions>
         </Dialog>
-    );
+   );
 }
 
 SignupDialog.propTypes = {

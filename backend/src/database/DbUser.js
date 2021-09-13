@@ -4,6 +4,7 @@
 *__________________________________________________________________________________________________
  */
 import { strict as assert } from 'assert';
+import { EncryptPassword, CheckPassword } from '../crypto/mycrypto.js';
 import Database from './Database.js';
 
 import {GetModuleLogger} from '../util/Logger.js';
@@ -27,8 +28,10 @@ const sql = {
 }
 
 // Create
-async function userCreate( email, firstName, lastName, salt, encryptedPassword, cryptIters ) {
+async function userCreate( email, firstName, lastName, password ) {
     log.debug(`Create: email='${email}', firstName='${firstName}', lastName='${lastName}'`);
+    let [salt, encryptedPassword, cryptIters] = await EncryptPassword(password); 
+    log.debug(`Create: password encryption complete (salt=${salt}, cryptIters=${cryptIters})`);
     const { rows:users } = await db.Query( sql.createUser, [email, firstName, lastName, salt, encryptedPassword, cryptIters] );
     if (users.length !== 1) {
         log.error(`Create: email '${email}': unexpected # of records updated: ${users.length}`);
@@ -40,6 +43,7 @@ async function userCreate( email, firstName, lastName, salt, encryptedPassword, 
 }
 
 // Get (by email)
+// Returns null if user not found
 async function userGet({email, id}) {
     assert(email || id, 'must supply email or id');
     const field = (email) ? 'email':'id'; 
@@ -49,6 +53,7 @@ async function userGet({email, id}) {
     const { rows:users } = await db.Query( query, [fval] );
     if (users.length === 0) {
         log.debug(`Get: field=${field}, val='${fval}': no user found`);
+        // NOTE: return null if user not found
         return null;
     }
     log.debug(`Get: found ${users.length} users`);

@@ -26,7 +26,7 @@ export function raiseError(err, req, res, next) {
     }
     else {
       log.error(`Global 500 generated: ${err.message} (status: ${err.status}), stack ${err.stack}`);
-      res.status(500).json({message: `Internal server error`});
+      res.status(500).json({message: `Internal server error: ${err.message}`});
     }
 }
 

@@ -60,7 +60,7 @@ const UserContextProvider = ( { children } ) => {
             raiseNotification({type: 'error', payload: error}); 
          }
          else { 
-            raiseNotification({type: 'success', payload: 'retrieved user login state'}); 
+            raiseNotification({type: 'success', payload: `retrieved user login state ${JSON.stringify(user)}`}); 
          }
       });
     },[ raiseNotification ]);
