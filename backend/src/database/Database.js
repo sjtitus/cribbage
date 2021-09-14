@@ -104,7 +104,9 @@ class Database {
             // Uncomment for full error info in log message
             // log.error(`Query error: ${error.message} (code: ${error.code})\nquery text: ${text}\nquery params: ${params}\nfull error: ${util.format('%o', error)}`);
             log.error(`Query error: ${error.message} (code: ${error.code}), query: ${text}, params: ${params}`);
-            throw new Error(`Query error: ${error.message} (code: ${error.code})`);
+            let e = new Error(`Query error: ${error.message} (code: ${error.code})`);
+            e.code = error.code;
+            throw e; 
         }
         return res;
     } 

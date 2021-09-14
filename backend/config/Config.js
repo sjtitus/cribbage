@@ -171,11 +171,7 @@ export default
                         "UserExists": {
                             "description": "User exists",
                             "content": {
-                                "application/json": {
-                                    "schema": {
-                                        "$ref": "#/components/schemas/User"
-                                    }
-                                }
+                                "application/json": { "schema": { "$ref": "#/components/schemas/Message" } }
                             }
                         },
                         "NewUserCreated": {
@@ -199,12 +195,6 @@ export default
                         },
                         "NotFound": {
                             "description": "Entity not found",
-                            "content": {
-                                "application/json": { "schema": { "$ref": "#/components/schemas/Message" } }
-                            }
-                        },
-                        "Gone": {
-                            "description": "Entity gone",
                             "content": {
                                 "application/json": { "schema": { "$ref": "#/components/schemas/Message" } }
                             }

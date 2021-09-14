@@ -46,8 +46,6 @@ const router = express.Router();
  *              $ref: '#/components/responses/User'
  *          '202':
  *              $ref: '#/components/responses/NotLoggedIn'
- *          '410':
- *              $ref: '#/components/responses/Gone'
  */ 
 async function GetLoggedInUser(req, res, next) {
    try {
@@ -63,7 +61,7 @@ async function GetLoggedInUser(req, res, next) {
          else {
             log.error(`GetLoggedInUser: existing session user ${uid} gone from database, clearing session/cookie`);
             DeleteSession(req, res, log);
-            res.status(410).json({ "message": "user no longer exists" });
+            throw new Error(`Signup: stale session on server, try again`); 
          }
       }
       else {
@@ -92,9 +90,10 @@ router.get('/user', GetLoggedInUser);
  *              $ref: '#/components/responses/NewUserCreated'
  *          '400': 
  *              $ref: '#/components/responses/BadRequest'
- *          '410':
- *              $ref: '#/components/responses/Gone'
- */ 
+ *          '409': 
+ *              $ref: '#/components/responses/UserExists'
+ */
+
 async function Signup(req, res, next) {
    try {
       log.debug(`Signup: checking for user session`);
@@ -109,10 +108,11 @@ async function Signup(req, res, next) {
             res.status(400).json({ message: "user already logged in" });
          }
          else {
-            // session, but no user in db (should NOT happen) 
+            // session, but no user in db (should NOT happen)
+            // delete the session and throw a 500 
             log.error(`Signup: existing session user ${uid} gone from database, clearing session/cookie`);
             DeleteSession(req, res, log);
-            res.status(410).json({ "message": "user no longer exists" });
+            throw new Error(`Signup: stale session on server, try again`); 
          }
       }
       else {
@@ -127,7 +127,16 @@ async function Signup(req, res, next) {
             // request is good
             const {firstName, lastName, email, password, passwordRepeat, rememberMe } = req.body;
             log.debug(`Signup: create new user: email=${req.body.email}, firstName=${firstName}, lastName=${lastName}`);
-            await user.Create(email, firstName, lastName, password);
+            try { await user.Create(email, firstName, lastName, password); }
+            catch (e) {
+               if (e.code === 'ST001') {  // unique constraint violation on email  
+                  res.status(409).json({ message: `user exists with email '${email}' (try logging in)` });
+                  return;
+               }
+               else {
+                  throw(e);
+               } 
+            }
             // if we got here, user creation was successful
             const userObject = user.UserObject;
             log.debug(`Signup: new user created: email=${userObject.email}, id=${userObject.id}`);
