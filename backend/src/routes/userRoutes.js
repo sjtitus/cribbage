@@ -33,6 +33,30 @@ const log = GetModuleLogger('UserRoutes');
 const router = express.Router();
 
 
+//_____________________________________________________________________________
+// _LoadLoggedInUser
+// Load and return the currently logged in user from datastore.
+// If a session exists but there is no db user, delete the session 
+// and log an error. Returns user or null.
+async function _LoadLoggedInUser(req, res) {
+   let user = null;
+   if ('user_id' in req.session) {
+      const uid = req.session.user_id;
+      log.debug(`_LoadLoggedInUser: found active session (sid=${req.session.id}, uid=${uid})`);
+      user = new User();
+      const userFound = await user.Load(uid);
+      if (!userFound) {
+         // session existed for unknown user (not in db)
+         user = null;
+         log.error(`_LoadLoggedInUser: stale session (sid=${req.session.id}, uid=${uid}), deleting session/cookie`);
+         DeleteSession(req, res);
+      }
+   }
+   return user; 
+}
+
+
+
 /**
  * @openapi
  *
@@ -49,31 +73,23 @@ const router = express.Router();
  */ 
 async function GetLoggedInUser(req, res, next) {
    try {
-      log.debug(`GetLoggedInUser: checking for user session`);
-      let user = new User();
-      if ('user_id' in req.session) {
-         const uid = req.session.user_id;
-         log.debug(`GetLoggedInUser: active session with user_id ${uid}`);
-         const userFound = await user.Load(uid);
-         if (userFound) {
-            res.status(200).json(user.UserObject);
-         }
-         else {
-            log.error(`GetLoggedInUser: existing session user ${uid} gone from database, clearing session/cookie`);
-            DeleteSession(req, res, log);
-            throw new Error(`Signup: stale session on server, try again`); 
-         }
+      log.debug(`GetLoggedInUser: checking for logged in user`);
+      const user = await _LoadLoggedInUser(req, res);
+      if (user) {
+         log.debug(`GetLoggedInUser: user ${user.userObject.email} logged in (uid=${user.userObject.id})`);
+         res.status(200).json(user.UserObject);
       }
       else {
-         log.debug(`GetLoggedInUser: no 'user_id' in session (not logged in)`);
+         log.debug(`GetLoggedInUser: no user logged in`); 
          res.status(202).json({ "message": "user not logged in" });
       }
-    }
-    catch (err) {
+   }
+   catch (err) {
       next(err)
-    }
+   }
 }
 router.get('/user', GetLoggedInUser); 
+
 
 /**
  * @openapi
@@ -96,60 +112,56 @@ router.get('/user', GetLoggedInUser);
 
 async function Signup(req, res, next) {
    try {
-      log.debug(`Signup: checking for user session`);
-      let user = new User();
-      if ('user_id' in req.session) {
-         const uid = req.session.user_id;
-         log.debug(`Signup: active session with user_id ${uid}`);
-         const userFound = await user.Load(uid);
-         if (userFound) {
-            // user already logged in 
-            log.error(`Signup: create new user should not be allowed when session exists (uid=${uid})`);
-            res.status(400).json({ message: "user already logged in" });
-         }
-         else {
-            // session, but no user in db (should NOT happen)
-            // delete the session and throw a 500 
-            log.error(`Signup: existing session user ${uid} gone from database, clearing session/cookie`);
-            DeleteSession(req, res, log);
-            throw new Error(`Signup: stale session on server, try again`); 
-         }
+      // validate the request
+      const { error, message } = SignupRequest.validateRequest(req);
+      if (error) {
+         log.debug(`Signup: bad request: ${message}`);
+         res.status(400).json({ message: message });
+         return;
       }
-      else {
-         log.debug(`Signup: no user session found, validating request`);
-         // validate the signup request
-         const { error, message } = SignupRequest.validateRequest(req);
-         if (error) {
-            log.debug(`Signup: bad request: ${message}`);
-            res.status(400).json({ message: message });
-         }
-         else {
-            // request is good
-            const {firstName, lastName, email, password, passwordRepeat, rememberMe } = req.body;
-            log.debug(`Signup: create new user: email=${req.body.email}, firstName=${firstName}, lastName=${lastName}`);
-            try { await user.Create(email, firstName, lastName, password); }
-            catch (e) {
-               if (e.code === 'ST001') {  // unique constraint violation on email  
-                  res.status(409).json({ message: `user exists with email '${email}' (try logging in)` });
-                  return;
-               }
-               else {
-                  throw(e);
-               } 
-            }
-            // if we got here, user creation was successful
-            const userObject = user.UserObject;
-            log.debug(`Signup: new user created: email=${userObject.email}, id=${userObject.id}`);
-            // if rememberme is set, drop a cookie
-            if (rememberMe) {
-               const sessionDays = Config.server.session.maxAgeDays;
-               log.debug(`Signup: establishing session/cookie for user ${userObject.email}`);
-               req.session.user_id = userObject.id; 
-               req.session.cookie.maxAge = sessionDays * 24 * 60 * 60 * 1000;
-            } 
-            res.status(201).json(userObject);
-         }
+      const {firstName, lastName, email, password, rememberMe } = req.body;
+      // 
+      // already logged in?: no signup allowed! 
+      let user = await _LoadLoggedInUser(req, res);
+      if (user) {
+         log.error(`Signup: illegal signup attempt by logged in user ${user.userObject.email}`);
+         res.status(400).json({ message: "user already logged in" });
+         user = null;
+         return;
       }
+      // 
+      // attempt signup
+      // may collide with existing user or fail for some other reason  
+      log.debug(`Signup: create new user: email=${email}, firstName=${firstName}, lastName=${lastName}`);
+      user = new User();
+      try { await user.Create(email, firstName, lastName, password); }
+      catch (e) {
+         user = null; 
+         // collision with existing user
+         if (e.code === 'ST001') {
+            res.status(409).json({ message: `user exists with email '${email}' (try logging in)` });
+            return;
+         }
+         // some other problem? (throw 500)
+         else { 
+            log.error(`Signup: error creating new user in datastore: ${e.message}`);
+            throw(e);
+         } 
+      }
+      //
+      // successful user creation! 
+      // add user_id to session (this will trigger cookie creation at far end)
+      const userObject = user.UserObject;
+      log.debug(`Signup: new user created: email=${userObject.email}, id=${userObject.id} (setting session)`);
+      req.session.user_id = userObject.id; 
+      //
+      // if rememberme is on, make session persist 
+      if (rememberMe) {
+         const sessionDays = Config.server.session.maxAgeDays;
+         log.debug(`Signup: remembering user ${userObject.email} for ${sessionDays} days`);
+         req.session.cookie.maxAge = sessionDays * 24 * 60 * 60 * 1000;
+      }
+      res.status(201).json(userObject);
    }
    catch (err) { 
       next(err)
