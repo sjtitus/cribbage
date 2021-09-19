@@ -6,7 +6,7 @@
         "name": "Chrome 3000",
         "type": "pwa-chrome",
         "request": "launch",
-        "url": "http://cribbagehost:3000",
+        "url": "http://my.tituscribbage.com:3000",
         "webRoot": "${workspaceFolder}/src",
         "sourceMapPathOverrides": {
           "webpack:///src/*": "${webRoot}/*"

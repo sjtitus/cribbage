@@ -14,7 +14,8 @@ export default
             cookie: {
                 httpOnly: true,
                 secure: false,
-                sameSite: false,
+                sameSite: 'Lax',
+
             },
             maxAgeDays: 7
         },

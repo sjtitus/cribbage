@@ -82,12 +82,15 @@ class CribbageServer {
     this.app.use(DumpCookie);
     log.info(`    . middleware: cors`);
     this.app.use(cors({
-      origin: 'http://cribbagehost:3000'
+      origin: 'http://my.tituscribbage.com:3000',  
+      credentials: true
     }));
     log.info(`    . middleware: final stage`);
     this.app.use(function(req, res, next){
-      next();
+      next(); 
     });
+
+
     //log.info(`    . middleware: allow origin`);
     //this.app.use(function(req, res, next) {
     //  res.setHeader('Access-Control-Allow-Origin','http://localhost:3000');

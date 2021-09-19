@@ -4,7 +4,7 @@ const e =
     logLevels: {
     },
     apiClient: {
-        baseURL: 'http://cribbagehost:8080', 
+        baseURL: 'http://my.tituscribbage.com:8080', 
         timeout: 5000
     }
 };

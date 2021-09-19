@@ -22,6 +22,8 @@ class apiClient {
         this._api = axios.create(config);
         // set up for JSON payload: TODO: is there more here?
         this._api.defaults.headers.post['Content-Type'] = 'application/json';
+        this._api.defaults.withCredentials = true;
+
     }
 
     // create a new request that will execute using this client
