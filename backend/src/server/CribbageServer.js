@@ -91,6 +91,7 @@ class CribbageServer {
     });
 
 
+
     //log.info(`    . middleware: allow origin`);
     //this.app.use(function(req, res, next) {
     //  res.setHeader('Access-Control-Allow-Origin','http://localhost:3000');

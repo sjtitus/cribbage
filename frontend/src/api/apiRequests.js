@@ -9,7 +9,7 @@ const api = apiClient.Instance();
 
 // list of all the API requests
 const apiRequests = {
-   GetLoggedInUser: {
+   GetLoggedInUser: { 
       config: { method: 'get', url: '/user', withCredentials: true, headers: { accept: '*/*' } },
       request: null 
    },
