@@ -76,7 +76,7 @@ async function GetLoggedInUser(req, res, next) {
       log.debug(`GetLoggedInUser: checking for logged in user`);
       const user = await _LoadLoggedInUser(req, res);
       if (user) {
-         log.debug(`GetLoggedInUser: user ${user.userObject.email} logged in (uid=${user.userObject.id})`);
+         log.debug(`GetLoggedInUser: user ${user.UserObject.email} logged in (uid=${user.UserObject.id})`);
          res.status(200).json(user.UserObject);
       }
       else {
@@ -124,7 +124,7 @@ async function Signup(req, res, next) {
       // already logged in?: no signup allowed! 
       let user = await _LoadLoggedInUser(req, res);
       if (user) {
-         log.error(`Signup: illegal signup attempt by logged in user ${user.userObject.email}`);
+         log.error(`Signup: illegal signup attempt by logged in user ${user.UserObject.email}`);
          res.status(400).json({ message: "user already logged in" });
          user = null;
          return;
